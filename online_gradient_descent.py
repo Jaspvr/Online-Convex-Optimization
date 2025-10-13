@@ -116,7 +116,12 @@ class OnlinePortfolio:
             yNext = X[t] - eta * G[t]
             xt = self.projectToK(yNext)
         
-        return X, G, L
+        # Multiply decisions (X) by the actual price relative outcomes to get the 
+        # growth of the portfolio in each stock ticker based on the decision made.
+        # "growth" is a vector of length T that holds how much the portfolio grew each day.
+        growth = (X * self.data).sum(axis=1)
+        wealth = growth.cumprod()
+        return X, wealth, L
 
 
 def main():
@@ -136,10 +141,22 @@ def main():
 
     eta = 0.25
     portfolio = OnlinePortfolio(relativePrices)
-    result = portfolio.odg(eta)
-    print(result)
+    X, wealth, loss = portfolio.odg(eta)
 
+    print("Weight distributions: ", X) # possibly add simplyfied visualization
+    print("Losses: ", loss)
+    print("Final wealth (OGD): ", wealth[-1])
 
+    # Plot the log wealth growth over time. Use log wealth since it matches with the loss
+    plt.figure()
+    plt.plot(dates, np.log(wealth), label="OGD (log-wealth)")
+    plt.title("Online Gradient Descent - Portfolio Log Wealth")
+    plt.xlabel("date")
+    plt.ylabel("log wealth")
+    plt.legend()
+    plt.tight_layout()
+    plt.show()
 
+    
 if __name__ == "__main__":
     main()
