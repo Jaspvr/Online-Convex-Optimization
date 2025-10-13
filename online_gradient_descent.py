@@ -7,6 +7,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from pandas_datareader import data as pdr
 
+# Data handling functions
 def fetchStooqClose(ticker, start=None, end=None):
     # Get Close prices for a single ticker from Stooq
     df = pdr.DataReader(ticker, "stooq", start=pd.to_datetime(start) if start else None,
@@ -40,6 +41,16 @@ def downloadPricesStooq(tickers, start=None, end=None, min_days=500):
     
     return prices
 
+
+class OnlinePortfolio:
+    def __init__(self, data):
+        self.data = data
+        self.T, self.n = data.shape
+
+    def odg(self, eta):
+        return []
+
+
 def main():
     # Use ETF data from Stooq
     TICKERS = ["SPY", "QQQ", "DIA", "IWM", "EFA", "EEM"]
@@ -48,6 +59,19 @@ def main():
 
     prices = downloadPricesStooq(TICKERS, start=START, end=END, min_days=500)
     print(prices)
+
+    # Form the table into T x n time series data
+    # Get the ratios of the prices compared to the previous day: xt = Pt / Pt-1
+    relativePrices = (prices / prices.shift(1)).dropna().to_numpy()
+    dates = prices.index[1:] # Shift dates to match the relative price data
+    T, n = relativePrices.shape # T is trading days, n is number of assets
+
+    eta = 0.25
+    portfolio = OnlinePortfolio(relativePrices)
+    result = portfolio.odg(eta)
+    print(result)
+
+
 
 if __name__ == "__main__":
     main()
