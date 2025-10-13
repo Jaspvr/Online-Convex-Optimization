@@ -46,9 +46,39 @@ class OnlinePortfolio:
     def __init__(self, data):
         self.data = data
         self.T, self.n = data.shape
+        
+        # Initialize weights as 1/n for each (x1 in K)
+        # Using an n-dimensional simplex K as the convex set
+        self.weights = np.ones(self.n) / self.n
+
+    def loss(xt, t):
+        return []
+    
+    def gradient(xt, t):
+        return []
+    
+    def projectToK(y):
+        return []
 
     def odg(self, eta):
-        return []
+        xt = self.weights.copy() # Initial weight spread is uniform distribution
+
+        X = np.zeros((self.T, self.n)) # Decisions (weight spreads)
+        G = np.zeros((self.T, self.n)) # Gradients
+        L = np.zeros(self.T) # Loss vector (1 entry per round)
+
+        # Go through each tiem step and update the weight distribution according to OGD
+        for t in range(self.T): 
+            # "Play" xt (observe loss - ft(xt) in textbook. Line 3 of Algorithm 8)
+            X[t] = xt
+            L[t] = self.loss(xt, t)
+
+            # Line 4 in algorithm 8
+            G[t] = self.gradient(xt, t)
+            yNext = X[t] - eta * G[t]
+            xt = self.projectToK(yNext)
+        
+        return X, G, L
 
 
 def main():
