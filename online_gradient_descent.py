@@ -62,9 +62,10 @@ class OnlinePortfolio:
         return -np.log(xpMul)
 
     def gradient(self, xt, t):
+        ''' Function to take the gradient of the loss with respect to the "decision" 
+        of the weights for round t '''
         pt = self.data[t]
-        # We are taking the gradient of the loss with respect to the "decision" of the 
-        # weights for round t
+
         # (dloss/dweight) = (d/dweight)(-log(weight @ outcome))
         # Using chain rule, we get the result gradient: -weightt / (weightt @ outcomet)
         xpMul = max(float(xt @ pt), 1e-10)
