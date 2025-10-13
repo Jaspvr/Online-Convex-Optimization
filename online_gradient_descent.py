@@ -51,13 +51,20 @@ class OnlinePortfolio:
         # Using an n-dimensional simplex K as the convex set
         self.weights = np.ones(self.n) / self.n
 
-    def loss(xt, t):
+    def loss(self, xt, t):
+        # Log loss function: 
+        pt = self.data[t] # price relatives that actually happened
+
+        # Take the negative log of the growth factor (weights * outcome)
+        # Summing losses gives -log(XT/X0), therefore minimizing this loss is maximizing wealth
+        # (The price relatives ratio XT/X0 indicates how much we have increased our wealth)
+        xpMul = max(float(xt @ pt), 1e-10)
+        return -np.log(xpMul)
+
+    def gradient(self, xt, t):
         return []
     
-    def gradient(xt, t):
-        return []
-    
-    def projectToK(y):
+    def projectToK(self, y):
         return []
 
     def odg(self, eta):
