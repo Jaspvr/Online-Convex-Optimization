@@ -52,7 +52,7 @@ class OnlinePortfolio:
         self.weights = np.ones(self.n) / self.n
 
     def loss(self, xt, t):
-        # Log loss function: 
+        ''' Log loss function '''
         pt = self.data[t] # price relatives that actually happened
 
         # Take the negative log of the growth factor (weights * outcome)
@@ -62,7 +62,13 @@ class OnlinePortfolio:
         return -np.log(xpMul)
 
     def gradient(self, xt, t):
-        return []
+        pt = self.data[t]
+        # We are taking the gradient of the loss with respect to the "decision" of the 
+        # weights for round t
+        # (dloss/dweight) = (d/dweight)(-log(weight @ outcome))
+        # Using chain rule, we get the result gradient: -weightt / (weightt @ outcomet)
+        xpMul = max(float(xt @ pt), 1e-10)
+        return -xt / xpMul
     
     def projectToK(self, y):
         return []
@@ -100,7 +106,7 @@ def main():
     # Form the table into T x n time series data
     # Get the ratios of the prices compared to the previous day: xt = Pt / Pt-1
     relativePrices = (prices / prices.shift(1)).dropna().to_numpy()
-    dates = prices.index[1:] # Shift dates to match the relative price data
+    dates = prices.index[1:] # Shift dates to match the relative price data (will use for plotting)
     T, n = relativePrices.shape # T is trading days, n is number of assets
 
     eta = 0.25
