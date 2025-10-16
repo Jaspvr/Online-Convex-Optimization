@@ -68,9 +68,9 @@ class OnlinePortfolio:
         pt = self.data[t]
 
         # (dloss/dweight) = (d/dweight)(-log(weight @ outcome))
-        # Using chain rule, we get the result gradient: -weightt / (weightt @ outcomet)
+        # Using chain rule, we get the result gradient: -outcomet / (weightt @ outcomet)
         xpMul = max(float(xt @ pt), 1e-10)
-        return -xt / xpMul
+        return -pt / xpMul
 
     def projectToK(self, y):
         ''' K is defined as an n-dimensional simplex with the rule of x >= 0 and sum of x = 1. 
