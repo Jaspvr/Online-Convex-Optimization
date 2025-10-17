@@ -72,6 +72,7 @@ class OnlinePortfolio:
         ''' Online Newton Step function '''
         xt = self.weights.copy()
 
+        A = epsilon * np.eye(self.n) # 'A' starts as an epsilon scaled Identity matrix
         X = np.zeros((self.T, self.n)) # weights
         L = np.zeros((self.T)) # losses
         G = np.zeros((self.T, self.n)) # gradients
@@ -80,10 +81,11 @@ class OnlinePortfolio:
             # "Play" xt and observe cost (line 3 in Algorithm 12)
             X[t] = xt
             L[t] = self.loss(xt, t)
-            G[t] = self.gradient(xt, t)
+            gt = self.gradient(xt, t)
+            G[t] = gt
 
             # Rank-1 update (line 4 in Algorithm 12)
-            A  = []
+            A  = A + np.outer(gt, gt) # does gt @ gtTranspose
 
             # Newton step
             # np.linalg.solve(a, b) computes x = a^(-1)b from ax = b
