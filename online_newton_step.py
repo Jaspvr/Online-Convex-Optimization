@@ -63,16 +63,60 @@ class OnlinePortfolio:
         return -np.log(xpMul)
 
     def gradient(self, xt, t):
-        return []
+        ''' Function to take the gradient of the loss with respect to the "decision" 
+        of the weights for round t '''
+        pt = self.data[t]
 
-    def projectToK(self, y):
-        return []
+        # (dloss/dweight) = (d/dweight)(-log(weight @ outcome))
+        xpMul = max(float(xt @ pt), 1e-10)
+        return -pt / xpMul
+
+    def projectEuclid(self, y):
+        # xtNew = max(xt - lambda)
+        u = np.sort(y)[::-1] # Sort with largest first
+        cumsum = np.cumsum(u) # cumulative sum array
+
+        # top k entries are positive and get shifted by a constant, rest become 0.
+        positivity = u * np.arange(1, len(u)+1)
+        rho = positivity > (cumsum - 1.0)
+        positiveIndices = np.nonzero(rho)[0]
+        lastPositiveIdx = positiveIndices[-1]
+
+        shift = (cumsum[lastPositiveIdx] - 1.0) / (lastPositiveIdx + 1.0)
+        x = np.maximum(y - shift, 0.0)
+
+        # Ensure sum of weights is exactly 1
+        s = x.sum()
+        if s > 0:
+            x *= 1.0 / s 
+
+        return x
+    
+    def projectToK(self, yt, At):
+        ''' This function projects onto the simplex (sum of weights = 1, each weight >= 0).
+        ONS accomplishes this by finding the closest feasible portfolio to y in the At induced
+        norm ('At' takes into account 2nd order information). Essentially we project back 
+        using curvature-aware distance.
+        '''
+
+        # To get this projection, we need to find x on the simplex that minimizes
+        # transpose(x-y)*A*(x-y). The gradient of this wrt x is A(x-y). What we can
+        # do is gradient descent on this minimization by using repeated euclidean
+        # projections while reducing x by its gradient each time to approach the solution
+
+        alpha = 1e-2 # This should be improved upon/researched further
+        xt = self.projectEuclid(yt)
+        for _ in range(50):
+            gt = At @ (xt - yt)
+            xt = self.projectEuclid(xt - alpha * gt)
+
+        return xt
 
     def ons(self, gamma, epsilon):
         ''' Online Newton Step function '''
         xt = self.weights.copy()
 
-        A = epsilon * np.eye(self.n) # 'A' starts as an epsilon scaled Identity matrix
+        At = epsilon * np.eye(self.n) # 'A' starts as an epsilon scaled Identity matrix
         X = np.zeros((self.T, self.n)) # weights
         L = np.zeros((self.T)) # losses
         G = np.zeros((self.T, self.n)) # gradients
@@ -85,17 +129,22 @@ class OnlinePortfolio:
             G[t] = gt
 
             # Rank-1 update (line 4 in Algorithm 12)
-            A  = A + np.outer(gt, gt) # does gt @ gtTranspose
+            At  = At + np.outer(gt, gt) # does gt @ gtTranspose
 
             # Newton step
             # np.linalg.solve(a, b) computes x = a^(-1)b from ax = b
-            invAg = np.linalg.solve(A, G[t])
+            invAg = np.linalg.solve(At, G[t])
             yt = xt - (1.0 / gamma) * invAg
 
             # Generalized projection
-            xt = self.projectToK(yt) # xt updated for next iteration
+            xt = self.projectToK(yt, At) # xt updated for next iteration
 
-        return [], [], []
+        # Multiply decisions (X) by the actual price relative outcomes to get the 
+        # growth of the portfolio in each stock ticker based on the decision made.
+        # "growth" is a vector of length T that holds how much the portfolio grew each day.
+        growth = (X * self.data).sum(axis=1)
+        wealth = growth.cumprod()
+        return X, wealth, L
         
 
 
