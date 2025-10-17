@@ -168,6 +168,20 @@ def main():
     portfolio = OnlinePortfolio(relativePrices)
     X, wealth, loss = portfolio.ons(gamma, epsilon)
 
+    print("Weight distributions: ", X)
+    print("Losses: ", loss)
+    print("Final wealth (ONS): ", wealth[-1])
+
+    # Plot the log wealth growth over time. Use log wealth since it matches with the loss
+    plt.figure()
+    plt.plot(dates, np.log(wealth), label="ONS (log-wealth)")
+    plt.title("Online Newton Step - Portfolio Log Wealth")
+    plt.xlabel("date")
+    plt.ylabel("log wealth")
+    plt.legend()
+    plt.tight_layout()
+    plt.show()
+
     
 if __name__ == "__main__":
     main()
