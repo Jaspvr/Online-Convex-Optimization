@@ -68,8 +68,32 @@ class OnlinePortfolio:
     def projectToK(self, y):
         return []
 
-    def ons(self, eta):
-        return []
+    def ons(self, gamma, epsilon):
+        ''' Online Newton Step function '''
+        xt = self.weights.copy()
+
+        X = np.zeros((self.T, self.n)) # weights
+        L = np.zeros((self.T)) # losses
+        G = np.zeros((self.T, self.n)) # gradients
+
+        for t in range(self.T):
+            # "Play" xt and observe cost (line 3 in Algorithm 12)
+            X[t] = xt
+            L[t] = self.loss(xt, t)
+            G[t] = self.gradient(xt, t)
+
+            # Rank-1 update (line 4 in Algorithm 12)
+            A  = []
+
+            # Newton step
+            # np.linalg.solve(a, b) computes x = a^(-1)b from ax = b
+            invAg = np.linalg.solve(A, G[t])
+            yt = xt - (1.0 / gamma) * invAg
+
+            # Generalized projection
+            xt = self.projectToK(yt) # xt updated for next iteration
+
+        return [], [], []
         
 
 
@@ -88,9 +112,10 @@ def main():
     dates = prices.index[1:] # Shift dates to match the relative price data (will use for plotting)
     T, n = relativePrices.shape # T is trading days, n is number of assets
 
-    eta = 0.25
+    gamma = 0.5
+    epsilon = 1e-2
     portfolio = OnlinePortfolio(relativePrices)
-    X, wealth, loss = portfolio.ons(eta)
+    X, wealth, loss = portfolio.ons(gamma, epsilon)
 
     
 if __name__ == "__main__":
