@@ -133,7 +133,7 @@ class OnlinePortfolio:
 
             # Newton step
             # np.linalg.solve(a, b) computes x = a^(-1)b from ax = b
-            invAg = np.linalg.solve(At, G[t])
+            invAg = np.linalg.solve(At, gt)
             yt = xt - (1.0 / gamma) * invAg
 
             # Generalized projection
