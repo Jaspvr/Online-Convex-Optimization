@@ -44,9 +44,9 @@ def downloadPricesStooq(tickers, start=None, end=None, min_days=500):
 
 
 class OnlinePortfolio:
-    def __init__(self, data):
-        self.data = data
-        self.T, self.n = data.shape
+    def __init__(self, priceRelatives):
+        self.priceRelatives = priceRelatives
+        self.T, self.n = priceRelatives.shape
         
         # Initialize weights as 1/n for each (x1 in K)
         # Using an n-dimensional simplex K as the convex set
@@ -54,23 +54,23 @@ class OnlinePortfolio:
 
     def loss(self, xt, t):
         ''' Log loss function '''
-        pt = self.data[t] # price relatives that actually happened
+        rt = self.priceRelatives[t] # price relatives that actually happened
 
         # Take the negative log of the growth factor (weights * outcome)
         # Summing losses gives -log(XT/X0), therefore minimizing this loss is maximizing wealth
         # (The price relatives ratio XT/X0 indicates how much we have increased our wealth)
-        xpMul = max(float(xt @ pt), 1e-10)
+        xpMul = max(float(xt @ rt), 1e-10)
         return -np.log(xpMul)
 
     def gradient(self, xt, t):
         ''' Function to take the gradient of the loss with respect to the "decision" 
         of the weights for round t '''
-        pt = self.data[t]
+        rt = self.priceRelatives[t]
 
         # (dloss/dweight) = (d/dweight)(-log(weight @ outcome))
         # Using chain rule, we get the result gradient: -outcomet / (weightt @ outcomet)
-        xpMul = max(float(xt @ pt), 1e-10)
-        return -pt / xpMul
+        xpMul = max(float(xt @ rt), 1e-10)
+        return -rt / xpMul
 
     def projectToK(self, y):
         ''' K is defined as an n-dimensional simplex with the rule of x >= 0 and sum of x = 1. 
