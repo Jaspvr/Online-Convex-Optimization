@@ -105,7 +105,7 @@ class OnlinePortfolio:
         G = np.zeros((self.T, self.n)) # Gradients
         L = np.zeros(self.T) # Loss vector (1 entry per round)
 
-        # Go through each tiem step and update the weight distribution according to OGD
+        # Go through each time step and update the weight distribution according to OGD
         for t in range(self.T): 
             # "Play" xt (observe loss - ft(xt) in textbook. Line 3 of Algorithm 8)
             X[t] = xt
@@ -119,7 +119,7 @@ class OnlinePortfolio:
         # Multiply decisions (X) by the actual price relative outcomes to get the 
         # growth of the portfolio in each stock ticker based on the decision made.
         # "growth" is a vector of length T that holds how much the portfolio grew each day.
-        growth = (X * self.data).sum(axis=1)
+        growth = (X * self.priceRelatives).sum(axis=1)
         wealth = growth.cumprod()
         return X, wealth, L
 
