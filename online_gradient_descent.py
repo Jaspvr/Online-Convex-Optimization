@@ -143,6 +143,12 @@ def main():
     portfolio = OnlinePortfolio(relativePrices)
     X, wealth, loss = portfolio.odg(eta)
 
+    # Best stock in hindsight for comparison
+    cumulativeWs = np.cumprod(relativePrices, axis=0)
+    finalW = cumulativeWs[-1, :]
+    bestIdx = int(np.argmax(finalW))
+    wealthBestStock = cumulativeWs[:, bestIdx]
+
     print("Weight distributions: ", X) # possibly add simplyfied visualization
     print("Losses: ", loss)
     print("Final wealth (OGD): ", wealth[-1])
@@ -150,6 +156,8 @@ def main():
     # Plot the log wealth growth over time. Use log wealth since it matches with the loss
     plt.figure()
     plt.plot(dates, np.log(wealth), label="OGD (log-wealth)")
+    plt.plot(dates, np.log(wealthBestStock),
+             label=f"Best single stock")
     plt.title("Online Gradient Descent - Portfolio Log Wealth")
     plt.xlabel("date")
     plt.ylabel("log wealth")
