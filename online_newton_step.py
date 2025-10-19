@@ -168,6 +168,12 @@ def main():
     portfolio = OnlinePortfolio(relativePrices)
     X, wealth, loss = portfolio.ons(gamma, epsilon)
 
+    # Best stock in hindsight for comparison
+    cumulativeWs = np.cumprod(relativePrices, axis=0)
+    finalW = cumulativeWs[-1, :]
+    bestIdx = int(np.argmax(finalW))
+    wealthBestStock = cumulativeWs[:, bestIdx]
+
     print("Weight distributions: ", X)
     print("Losses: ", loss)
     print("Final wealth (ONS): ", wealth[-1])
@@ -175,6 +181,8 @@ def main():
     # Plot the log wealth growth over time. Use log wealth since it matches with the loss
     plt.figure()
     plt.plot(dates, np.log(wealth), label="ONS (log-wealth)")
+    plt.plot(dates, np.log(wealthBestStock),
+             label=f"Best single stock")
     plt.title("Online Newton Step - Portfolio Log Wealth")
     plt.xlabel("date")
     plt.ylabel("log wealth")
