@@ -113,7 +113,6 @@ def main():
     # Get the ratios of the prices compared to the previous day: xt = Pt / Pt-1
     relativePrices = (prices / prices.shift(1)).dropna().to_numpy()
     dates = prices.index[1:] # Shift dates to match the relative price data (will use for plotting)
-    T, n = relativePrices.shape # T is trading days, n is number of assets
 
     portfolio = OnlinePortfolio(relativePrices)
     X, wealth, loss = portfolio.odg()
