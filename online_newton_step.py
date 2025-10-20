@@ -82,7 +82,7 @@ class OnlinePortfolio:
         # do is gradient descent on this minimization by using repeated euclidean
         # projections while reducing x by its gradient each time to approach the solution
 
-        alpha = 1e-2 # This should be improved upon/researched further
+        alpha = 1e-3 # This should be improved upon/researched further
         xt = self.projectEuclid(yt)
         for _ in range(50):
             gt = At @ (xt - yt)
