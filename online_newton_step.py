@@ -52,6 +52,20 @@ class OnlinePortfolio:
         # Using an n-dimensional simplex K as the convex set
         self.weights = np.ones(self.n) / self.n
 
+        self.G = 0 # factor used to calculate gamma
+        self.D = 2**(0.5) # factor used to calculate epsilon
+        self.gamma = 0
+        self.epsilon = 0
+
+    def computeGammaEpsilon(self, grad, alpha):
+        ''' Function to compute gamma and epsilon tuning parameters '''
+        gradMag = np.linalg.norm(grad)
+        if gradMag > self.G:
+            self.G = gradMag
+
+        self.gamma = 0.5 * min(1/(self.G * self.D), alpha)
+        self.epsilon = 1 / ((self.G**2)*(self.D**2))
+
     def loss(self, xt, t):
         ''' Log loss function '''
         pt = self.data[t] # price relatives that actually happened
@@ -112,29 +126,33 @@ class OnlinePortfolio:
 
         return xt
 
-    def ons(self, gamma, epsilon):
+    def ons(self, alpha):
         ''' Online Newton Step function '''
         xt = self.weights.copy()
-
-        At = epsilon * np.eye(self.n) # 'A' starts as an epsilon scaled Identity matrix
+        
         X = np.zeros((self.T, self.n)) # weights
         L = np.zeros((self.T)) # losses
-        G = np.zeros((self.T, self.n)) # gradients
+        Grad = np.zeros((self.T, self.n)) # gradients
 
         for t in range(self.T):
             # "Play" xt and observe cost (line 3 in Algorithm 12)
             X[t] = xt
             L[t] = self.loss(xt, t)
-            gt = self.gradient(xt, t)
-            G[t] = gt
+            gradt = self.gradient(xt, t)
+            Grad[t] = gradt
+
+            self.computeGammaEpsilon(gradt, alpha)
 
             # Rank-1 update (line 4 in Algorithm 12)
-            At  = At + np.outer(gt, gt) # does gt @ gtTranspose
+            if t == 0:
+                # 'A' starts as an epsilon scaled Identity matrix
+                At = self.epsilon * np.eye(self.n)
+            At  = At + np.outer(gradt, gradt) # does gt @ gtTranspose
 
             # Newton step
             # np.linalg.solve(a, b) computes x = a^(-1)b from ax = b
-            invAg = np.linalg.solve(At, gt)
-            yt = xt - (1.0 / gamma) * invAg
+            invAg = np.linalg.solve(At, gradt)
+            yt = xt - (1.0 / self.gamma) * invAg
 
             # Generalized projection
             xt = self.projectToK(yt, At) # xt updated for next iteration
@@ -163,10 +181,9 @@ def main():
     dates = prices.index[1:] # Shift dates to match the relative price data (will use for plotting)
     T, n = relativePrices.shape # T is trading days, n is number of assets
 
-    gamma = 0.5
-    epsilon = 1e-2
+    alpha = 1e-3
     portfolio = OnlinePortfolio(relativePrices)
-    X, wealth, loss = portfolio.ons(gamma, epsilon)
+    X, wealth, loss = portfolio.ons(alpha)
 
     # Best stock in hindsight for comparison
     cumulativeWs = np.cumprod(relativePrices, axis=0)
