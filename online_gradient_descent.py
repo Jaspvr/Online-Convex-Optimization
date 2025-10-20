@@ -52,12 +52,16 @@ class OnlinePortfolio:
         # Using an n-dimensional simplex K as the convex set
         self.weights = np.ones(self.n) / self.n
 
-        self.eta  = np.ones(self.T) # one eta per round
-        self.Gt = 0 # factor used to calculate eta
-        self.D = 1 # factor used to calculate eta
+        self.eta  = np.zeros(self.T) # one eta per round
+        self.G = 0 # factor used to calculate eta
+        self.D = 2**(0.5) # factor used to calculate eta
 
-    def computeEta():
-        return 0
+    def computeEta(self, grad, t):
+        gradMag = np.linalg.norm(grad)
+        if gradMag > self.G:
+            self.G = gradMag
+
+        self.eta[t] = self.D / (self.G * ((t+1)**0.5)) # t+1 to make rounds 1-indexed
 
     def loss(self, xt, t):
         ''' Log loss function '''
@@ -105,7 +109,7 @@ class OnlinePortfolio:
 
         return x
 
-    def odg(self, eta):
+    def odg(self):
         xt = self.weights.copy() # Initial weight spread is uniform distribution
 
         X = np.zeros((self.T, self.n)) # Decisions (weight spreads)
@@ -114,19 +118,16 @@ class OnlinePortfolio:
 
         # Go through each time step and update the weight distribution according to OGD
         for t in range(self.T): 
-            self.eta = self.computeEta(t)
-
             # "Play" xt (observe loss - ft(xt) in textbook. Line 3 of Algorithm 8)
             X[t] = xt
             L[t] = self.loss(xt, t)
 
             # Line 4 in algorithm 8
             Grad[t] = self.gradient(xt, t)
-            yNext = X[t] - eta * Grad[t]
+            self.computeEta(Grad[t], t)
+            yNext = X[t] - self.eta[t] * Grad[t]
             xt = self.projectToK(yNext)
 
-            
-        
         # Multiply decisions (X) by the actual price relative outcomes to get the 
         # growth of the portfolio in each stock ticker based on the decision made.
         # "growth" is a vector of length T that holds how much the portfolio grew each day.
@@ -150,9 +151,8 @@ def main():
     dates = prices.index[1:] # Shift dates to match the relative price data (will use for plotting)
     T, n = relativePrices.shape # T is trading days, n is number of assets
 
-    eta = 0.25
     portfolio = OnlinePortfolio(relativePrices)
-    X, wealth, loss = portfolio.odg(eta)
+    X, wealth, loss = portfolio.odg()
 
     # Best stock in hindsight for comparison
     cumulativeWs = np.cumprod(relativePrices, axis=0)
