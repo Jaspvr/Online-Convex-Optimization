@@ -52,6 +52,13 @@ class OnlinePortfolio:
         # Using an n-dimensional simplex K as the convex set
         self.weights = np.ones(self.n) / self.n
 
+        self.eta  = np.ones(self.T) # one eta per round
+        self.Gt = 0 # factor used to calculate eta
+        self.D = 1 # factor used to calculate eta
+
+    def computeEta():
+        return 0
+
     def loss(self, xt, t):
         ''' Log loss function '''
         rt = self.priceRelatives[t] # price relatives that actually happened
@@ -102,19 +109,23 @@ class OnlinePortfolio:
         xt = self.weights.copy() # Initial weight spread is uniform distribution
 
         X = np.zeros((self.T, self.n)) # Decisions (weight spreads)
-        G = np.zeros((self.T, self.n)) # Gradients
+        Grad = np.zeros((self.T, self.n)) # Gradients
         L = np.zeros(self.T) # Loss vector (1 entry per round)
 
         # Go through each time step and update the weight distribution according to OGD
         for t in range(self.T): 
+            self.eta = self.computeEta(t)
+
             # "Play" xt (observe loss - ft(xt) in textbook. Line 3 of Algorithm 8)
             X[t] = xt
             L[t] = self.loss(xt, t)
 
             # Line 4 in algorithm 8
-            G[t] = self.gradient(xt, t)
-            yNext = X[t] - eta * G[t]
+            Grad[t] = self.gradient(xt, t)
+            yNext = X[t] - eta * Grad[t]
             xt = self.projectToK(yNext)
+
+            
         
         # Multiply decisions (X) by the actual price relative outcomes to get the 
         # growth of the portfolio in each stock ticker based on the decision made.
