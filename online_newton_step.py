@@ -93,6 +93,8 @@ class OnlinePortfolio:
     def ons(self, alpha):
         ''' Online Newton Step function '''
         xt = self.weights.copy()
+
+        At = 0
         
         X = np.zeros((self.T, self.n)) # weights
         L = np.zeros((self.T)) # losses
@@ -111,6 +113,7 @@ class OnlinePortfolio:
             if t == 0:
                 # 'A' starts as an epsilon scaled Identity matrix
                 At = self.epsilon * np.eye(self.n)
+            
             At  = At + np.outer(gradt, gradt) # does gt @ gtTranspose
 
             # Newton step
