@@ -147,7 +147,7 @@ def main():
     relativePrices = (prices / prices.shift(1)).dropna().to_numpy()
     dates = prices.index[1:] # Shift dates to match the relative price data (will use for plotting)
 
-    alpha = 1e-3
+    alpha = 1
     portfolio = OnlinePortfolio(relativePrices)
     X, wealth, loss = portfolio.ons(alpha)
 
