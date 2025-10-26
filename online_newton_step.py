@@ -6,6 +6,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from data_handler import downloadPricesStooq
+from cvxpy_projection import cvxpyProjectToK
 
 class OnlinePortfolio:
     def __init__(self, data):
@@ -122,7 +123,11 @@ class OnlinePortfolio:
             yt = xt - (1.0 / self.gamma) * invAg
 
             # Generalized projection
-            xt = self.projectToK(yt, At) # xt updated for next iteration
+            # gradient descent projection:
+            # xt = self.projectToK(yt, At) # xt updated for next iteration
+
+            # cvx optimized projection:
+            xt  = cvxpyProjectToK(yt, At)
 
         # Multiply decisions (X) by the actual price relative outcomes to get the 
         # growth of the portfolio in each stock ticker based on the decision made.
