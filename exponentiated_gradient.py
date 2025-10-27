@@ -6,7 +6,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from data_handler import downloadPricesStooq
-from cvxpy_projection import cvxpyProjectToK
 
 class OnlinePortfolio:
     def __init__(self, data):
@@ -36,13 +35,34 @@ class OnlinePortfolio:
         xpMul = max(float(xt @ rt), 1e-10)
         return -rt / xpMul
 
-    def eg(self):
+    def eg(self, eta):
         ''' Exponentiated Gradient algorithm '''
-
-        return []
+        xt = self.weights.copy()
         
-        
+        X = np.zeros((self.T, self.n)) # weights
+        L = np.zeros((self.T)) # losses
 
+        for t in range(self.T):
+            X[t] = xt
+            L[t] = self.loss(xt, t)
+            gradt = self.gradient(xt, t)
+
+            # Use the previous time step's xt (xt not updated yet here)
+            yt = xt * np.exp(eta * gradt)
+
+            # Normalize back to simplex by dividing by sum from PLG
+            denominator = 0
+            for j in range(len(xt)):
+                denominator += xt[j] * np.exp(eta * gradt[j])
+            
+            xt = yt / denominator
+
+        # Multiply decisions (X) by the actual price relative outcomes to get the 
+        # growth of the portfolio in each stock ticker based on the decision made.
+        # "growth" is a vector of length T that holds how much the portfolio grew each day.
+        growth = (X * self.data).sum(axis=1)
+        wealth = growth.cumprod()
+        return X, wealth, L
 
 def main():
     # Use ETF data from Stooq
@@ -58,8 +78,9 @@ def main():
     relativePrices = (prices / prices.shift(1)).dropna().to_numpy()
     dates = prices.index[1:] # Shift dates to match the relative price data (will use for plotting)
 
+    eta = 1e-3
     portfolio = OnlinePortfolio(relativePrices)
-    X, wealth, loss = portfolio.eg()
+    X, wealth, loss = portfolio.eg(eta)
 
     # Best stock in hindsight for comparison
     cumulativeWs = np.cumprod(relativePrices, axis=0)
