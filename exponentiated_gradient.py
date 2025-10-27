@@ -10,11 +10,19 @@ from data_handler import downloadPricesStooq
 class OnlinePortfolio:
     def __init__(self, data):
         self.data = data
-        self.T, self.n = data.shape
+        self.T, self.n = data.shape # number of trading periods and number of stocks
+        self.c = 1 # smallest price relative
+        self.C = 1 # largest price relative
         
         # Initialize weights as 1/n for each (x1 in K)
         # Using an n-dimensional simplex K as the convex set
         self.weights = np.ones(self.n) / self.n
+
+    def computeEta(self, xt):
+        # eta = (c / C) * root(8 * ln(num stocks) / (num trading days)) via PLG
+        self.c = min(xt)
+        self.C = max(xt)
+        return (self.c / self.C) * np.sqrt(8 * np.log(self.n) / self.T)
 
     def loss(self, xt, t):
         ''' Log loss function '''
@@ -35,7 +43,7 @@ class OnlinePortfolio:
         xpMul = max(float(xt @ rt), 1e-10)
         return -rt / xpMul
 
-    def eg(self, eta):
+    def eg(self):
         ''' Exponentiated Gradient algorithm '''
         xt = self.weights.copy()
         
@@ -47,15 +55,13 @@ class OnlinePortfolio:
             L[t] = self.loss(xt, t)
             gradt = self.gradient(xt, t)
 
+            eta = self.computeEta(self.data[t])
+
             # Use the previous time step's xt (xt not updated yet here)
             yt = xt * np.exp(eta * gradt)
 
             # Normalize back to simplex by dividing by sum from PLG
-            denominator = 0
-            for j in range(len(xt)):
-                denominator += xt[j] * np.exp(eta * gradt[j])
-            
-            xt = yt / denominator
+            xt = yt / sum(yt)
 
         # Multiply decisions (X) by the actual price relative outcomes to get the 
         # growth of the portfolio in each stock ticker based on the decision made.
@@ -78,9 +84,8 @@ def main():
     relativePrices = (prices / prices.shift(1)).dropna().to_numpy()
     dates = prices.index[1:] # Shift dates to match the relative price data (will use for plotting)
 
-    eta = 1e-3
     portfolio = OnlinePortfolio(relativePrices)
-    X, wealth, loss = portfolio.eg(eta)
+    X, wealth, loss = portfolio.eg()
 
     # Best stock in hindsight for comparison
     cumulativeWs = np.cumprod(relativePrices, axis=0)
