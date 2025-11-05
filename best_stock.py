@@ -1,5 +1,3 @@
-# Best stock in hindsight for comparison
-
 import numpy as np
 
 def best_in_hindsight(rt):

@@ -31,7 +31,6 @@ def optimal_crp_weights(rt, maxIter=5000, stepSize=0.01, tol=1e-8):
     rt: T x n array, each row is the vector of price relatives at time t
     Returns: xStar (n,), and the wealth trajectory using xStar
     """
-    # rt is T x n
     T, n = rt.shape
 
     # Start from uniform portfolio weights x0
@@ -81,12 +80,8 @@ def optimal_crp_weights_cvx(rt):
     prob = cp.Problem(obj, constraints)
     prob.solve()
 
-    xStar = xt.value
-    xStar = project_to_simplex(xStar)
-
-    wealthCrp = np.cumprod(rt @ xStar)
-
-    return xStar, wealthCrp
+    # Weights and cumulative wealth for optimal CRP
+    return xt.value, np.cumprod(rt @ xt.value)
 
 
 def main():
