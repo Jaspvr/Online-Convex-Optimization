@@ -6,7 +6,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from data_handling.data_handler import downloadPricesStooq
-from best_stock import best_in_hindsight
+from best_stock import bestInHindsight
 from projections import projectToK
 from data.tickers import *
 
@@ -95,7 +95,7 @@ def main():
     X, wealth, loss = portfolio.odg()
 
     # For comparison
-    wealthBestStock = best_in_hindsight(relativePrices)
+    wealthBestStock = bestInHindsight(relativePrices)
 
     print("Weight distributions: ", X) # possibly add simplyfied visualization
     print("Losses: ", loss)

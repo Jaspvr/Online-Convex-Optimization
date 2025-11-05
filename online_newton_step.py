@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 
 from data_handling.data_handler import downloadPricesStooq
 from projections import cvxpyOnsProjectToK, projectToK
-from best_stock import best_in_hindsight
+from best_stock import bestInHindsight
 from data.tickers import *
 
 class OnlinePortfolio:
@@ -136,7 +136,7 @@ def main():
     portfolio = OnlinePortfolio(relativePrices)
     X, wealth, loss = portfolio.ons(alpha)
 
-    wealthBestStock = best_in_hindsight(relativePrices)
+    wealthBestStock = bestInHindsight(relativePrices)
 
     print("Weight distributions: ", X)
     print("Losses: ", loss)

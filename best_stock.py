@@ -1,6 +1,6 @@
 import numpy as np
 
-def best_in_hindsight(rt):
+def bestInHindsight(rt):
     """
     Calculate wealth of portfolio if full portfolio is allocated to the
     best performing stock in hindsight.

@@ -8,7 +8,29 @@ from projections import projectToK
 from data.tickers import *
 
 
-def optimal_crp_weights(rt, maxIter=5000, stepSize=0.01, tol=1e-8):
+def optimalCrpWeightsCvx(rt):
+    """
+    Solve for optimal CRP using cvxpy
+    """
+    T, n = rt.shape
+
+    xt = cp.Variable(n)
+    constraints = [
+        xt >= 0,
+        cp.sum(xt) == 1
+    ]
+
+    # Objective: maximize final wealth which is sumt log(xt^T rt)
+    eps = 1e-12
+    obj = cp.Maximize(cp.sum(cp.log(rt @ xt + eps)))
+    prob = cp.Problem(obj, constraints)
+    prob.solve()
+
+    # Weights and cumulative wealth for optimal CRP
+    return xt.value, np.cumprod(rt @ xt.value)
+
+
+def optimalCrpWeights(rt, maxIter=5000, stepSize=0.01, tol=1e-8):
     """
     Compute the optimal Constant Rebalanced Portfolio (CRP) in hindsight.
 
@@ -44,28 +66,6 @@ def optimal_crp_weights(rt, maxIter=5000, stepSize=0.01, tol=1e-8):
     wealth_crp = np.cumprod(rt @ xt)
 
     return xt, wealth_crp
-
-
-def optimal_crp_weights_cvx(rt):
-    """
-    Solve for optimal CRP using cvxpy
-    """
-    T, n = rt.shape
-
-    xt = cp.Variable(n)
-    constraints = [
-        xt >= 0,
-        cp.sum(xt) == 1
-    ]
-
-    # Objective: maximize final wealth which is sumt log(xt^T rt)
-    eps = 1e-12
-    obj = cp.Maximize(cp.sum(cp.log(rt @ xt + eps)))
-    prob = cp.Problem(obj, constraints)
-    prob.solve()
-
-    # Weights and cumulative wealth for optimal CRP
-    return xt.value, np.cumprod(rt @ xt.value)
 
 
 def main():
