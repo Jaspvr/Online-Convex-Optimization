@@ -5,7 +5,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-from data_handler import downloadPricesStooq
+from data_handling.data_handler import downloadPricesStooq
+from data.tickers import *
 
 class OnlinePortfolio:
     def __init__(self, data):

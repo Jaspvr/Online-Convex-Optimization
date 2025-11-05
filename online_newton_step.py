@@ -5,8 +5,9 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-from data_handler import downloadPricesStooq
+from data_handling.data_handler import downloadPricesStooq
 from cvxpy_projection import cvxpyProjectToK
+from data.tickers import *
 
 class OnlinePortfolio:
     def __init__(self, data):
