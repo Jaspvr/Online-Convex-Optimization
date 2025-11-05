@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 
 from data_handling.data_handler import downloadPricesStooq
 from best_stock import best_in_hindsight
+from projections import projectToK
 from data.tickers import *
 
 class OnlinePortfolio:
@@ -48,32 +49,6 @@ class OnlinePortfolio:
         # Using chain rule, we get the result gradient: -outcomet / (weightt @ outcomet)
         xpMul = max(float(xt @ rt), 1e-10)
         return -rt / xpMul
-
-    def projectToK(self, y):
-        ''' K is defined as an n-dimensional simplex with the rule of x >= 0 and sum of x = 1. 
-        This function takes a weight decision vector and projects it to land in K if it does not already.
-        A Euclidean projection can be used to ensure the new point is as close to the original as possible
-        while still being in K. '''
-
-        # xtNew = max(xt - lambda)
-        u = np.sort(y)[::-1] # Sort with largest first
-        cumsum = np.cumsum(u) # cumulative sum array
-
-        # top k entries are positive and get shifted by a constant, rest become 0.
-        positivity = u * np.arange(1, len(u)+1)
-        rho = positivity > (cumsum - 1.0)
-        positiveIndices = np.nonzero(rho)[0]
-        lastPositiveIdx = positiveIndices[-1]
-
-        shift = (cumsum[lastPositiveIdx] - 1.0) / (lastPositiveIdx + 1.0)
-        x = np.maximum(y - shift, 0.0)
-
-        # Ensure sum of weights is exactly 1
-        s = x.sum()
-        if s > 0:
-            x *= 1.0 / s 
-
-        return x
 
     def odg(self):
         xt = self.weights.copy() # Initial weight spread is uniform distribution

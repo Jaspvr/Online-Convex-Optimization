@@ -4,24 +4,8 @@ import matplotlib.pyplot as plt
 
 from data_handling.data_handler import downloadPricesStooq
 from best_stock import best_in_hindsight
+from projections import projectToK
 from data.tickers import *
-
-
-def project_to_simplex(v):
-    """
-    Euclidean projection of v onto the probability simplex:
-        { w : w_i >= 0, sum_i w_i = 1 }
-    """
-    v = np.asarray(v, dtype=float)
-    n = v.size
-    # Sort v in descending order
-    u = np.sort(v)[::-1]
-    cssv = np.cumsum(u)
-    # Find rho
-    rho = np.nonzero(u * np.arange(1, n + 1) > (cssv - 1))[0][-1]
-    theta = (cssv[rho] - 1) / (rho + 1.0)
-    w = np.maximum(v - theta, 0.0)
-    return w
 
 
 def optimal_crp_weights(rt, maxIter=5000, stepSize=0.01, tol=1e-8):
@@ -47,7 +31,7 @@ def optimal_crp_weights(rt, maxIter=5000, stepSize=0.01, tol=1e-8):
         xtNew = xt + stepSize * grad
 
         # project back to simplex (valid portfolio)
-        xtNew = project_to_simplex(xtNew)
+        xtNew = projectToK(xtNew)
 
         # check convergence
         if np.linalg.norm(xtNew - xt, ord=1) < tol:

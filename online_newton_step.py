@@ -6,7 +6,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from data_handling.data_handler import downloadPricesStooq
-from cvxpy_projection import cvxpyProjectToK
+from projections import cvxpyOnsProjectToK, projectToK
 from best_stock import best_in_hindsight
 from data.tickers import *
 
@@ -51,29 +51,8 @@ class OnlinePortfolio:
         # (dloss/dweight) = (d/dweight)(-log(weight @ outcome))
         xpMul = max(float(xt @ pt), 1e-10)
         return -pt / xpMul
-
-    def projectEuclid(self, y):
-        # xtNew = max(xt - lambda)
-        u = np.sort(y)[::-1] # Sort with largest first
-        cumsum = np.cumsum(u) # cumulative sum array
-
-        # top k entries are positive and get shifted by a constant, rest become 0.
-        positivity = u * np.arange(1, len(u)+1)
-        rho = positivity > (cumsum - 1.0)
-        positiveIndices = np.nonzero(rho)[0]
-        lastPositiveIdx = positiveIndices[-1]
-
-        shift = (cumsum[lastPositiveIdx] - 1.0) / (lastPositiveIdx + 1.0)
-        x = np.maximum(y - shift, 0.0)
-
-        # Ensure sum of weights is exactly 1
-        s = x.sum()
-        if s > 0:
-            x *= 1.0 / s 
-
-        return x
     
-    def projectToK(self, yt, At):
+    def simpleProjectToK(self, yt, At):
         ''' This function projects onto the simplex (sum of weights = 1, each weight >= 0).
         ONS accomplishes this by finding the closest feasible portfolio to y in the At induced
         norm ('At' takes into account 2nd order information). Essentially we project back 
@@ -86,10 +65,10 @@ class OnlinePortfolio:
         # projections while reducing x by its gradient each time to approach the solution
 
         alpha = 1e-3 # This should be improved upon/researched further
-        xt = self.projectEuclid(yt)
+        xt = projectToK(yt)
         for _ in range(50):
             gt = At @ (xt - yt)
-            xt = self.projectEuclid(xt - alpha * gt)
+            xt = projectToK(xt - alpha * gt)
 
         return xt
 
@@ -124,12 +103,11 @@ class OnlinePortfolio:
             invAg = np.linalg.solve(At, gradt)
             yt = xt - (1.0 / self.gamma) * invAg
 
-            # Generalized projection
             # gradient descent projection:
             # xt = self.projectToK(yt, At) # xt updated for next iteration
 
             # cvx optimized projection:
-            xt  = cvxpyProjectToK(yt, At)
+            xt  = cvxpyOnsProjectToK(yt, At)
 
         # Multiply decisions (X) by the actual price relative outcomes to get the 
         # growth of the portfolio in each stock ticker based on the decision made.
