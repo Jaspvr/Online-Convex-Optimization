@@ -3,6 +3,7 @@ import cvxpy as cp
 import matplotlib.pyplot as plt
 
 from data_handling.data_handler import downloadPricesStooq
+from best_stock import best_in_hindsight
 from data.tickers import *
 
 
@@ -89,7 +90,6 @@ def optimal_crp_weights_cvx(rt):
 
 
 def main():
-    # Use ETF data from Stooq
     TICKERS = TICKERS_SP10
     START = "2020-01-01"
     END = None  # Until current date
@@ -98,11 +98,7 @@ def main():
     relativePrices = (prices / prices.shift(1)).dropna().to_numpy()
     dates = prices.index[1:]
 
-    # Best stock in hindsight for comparison
-    cumulativeWs = np.cumprod(relativePrices, axis=0)
-    finalW = cumulativeWs[-1, :]
-    bestIdx = int(np.argmax(finalW))
-    wealthBestStock = cumulativeWs[:, bestIdx]
+    wealthBestStock = best_in_hindsight(relativePrices)
 
     xStar, wealthCRP = optimal_crp_weights_cvx(relativePrices)
     print("Optimal CRP weights (hindsight):", xStar)

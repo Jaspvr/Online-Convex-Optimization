@@ -6,6 +6,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from data_handling.data_handler import downloadPricesStooq
+from best_stock import best_in_hindsight
 from data.tickers import *
 
 class OnlinePortfolio:
@@ -88,11 +89,7 @@ def main():
     portfolio = OnlinePortfolio(relativePrices)
     X, wealth, loss = portfolio.eg()
 
-    # Best stock in hindsight for comparison
-    cumulativeWs = np.cumprod(relativePrices, axis=0)
-    finalW = cumulativeWs[-1, :]
-    bestIdx = int(np.argmax(finalW))
-    wealthBestStock = cumulativeWs[:, bestIdx]
+    wealthBestStock = best_in_hindsight(relativePrices)
 
     print("Weight distributions: ", X)
     print("Losses: ", loss)
