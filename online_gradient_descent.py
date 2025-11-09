@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 
 from data_handling.data_handler import downloadPricesStooq
 from best_stock import bestInHindsight
-from projections import projectToK
+from projections import projectToK, cvxpyOgdProjectToK
 from data.tickers import *
 
 class OnlinePortfolio:
@@ -19,7 +19,9 @@ class OnlinePortfolio:
         # Using an n-dimensional simplex K as the convex set
         self.weights = np.ones(self.n) / self.n
 
-        self.eta  = np.zeros(self.T) # one eta per round
+        # self.eta  = np.zeros(self.T) # one eta per round
+        self.eta = 0.01
+
         self.G = 0 # factor used to calculate eta
         self.D = 2**(0.5) # factor used to calculate eta
 
@@ -64,10 +66,12 @@ class OnlinePortfolio:
             L[t] = self.loss(xt, t)
 
             # Line 4 in algorithm 8
-            Grad[t] = self.gradient(xt, t)
-            self.computeEta(Grad[t], t)
-            yNext = X[t] - self.eta[t] * Grad[t]
-            xt = projectToK(yNext)
+            #Grad[t] = self.gradient(xt, t)
+            #self.computeEta(Grad[t], t)
+            #yNext = X[t] - self.eta[t] * Grad[t]
+
+            yNext = X[t] - (self.eta / ((t+1)**0.5)) * Grad[t]
+            xt = cvxpyOgdProjectToK(yNext)
 
         # Multiply decisions (X) by the actual price relative outcomes to get the 
         # growth of the portfolio in each stock ticker based on the decision made.
