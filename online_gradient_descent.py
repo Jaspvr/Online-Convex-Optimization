@@ -67,7 +67,7 @@ class OnlinePortfolio:
             Grad[t] = self.gradient(xt, t)
             self.computeEta(Grad[t], t)
             yNext = X[t] - self.eta[t] * Grad[t]
-            xt = self.projectToK(yNext)
+            xt = projectToK(yNext)
 
         # Multiply decisions (X) by the actual price relative outcomes to get the 
         # growth of the portfolio in each stock ticker based on the decision made.
