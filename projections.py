@@ -37,7 +37,7 @@ def cvxpyOnsProjectToK(yt, At):
     return x.value
 
 
-def cvxpyOgdProjectToK(yt, At):
+def cvxpyOgdProjectToK(yt):
     '''
     Same as ONS except simplified since At is I
     '''

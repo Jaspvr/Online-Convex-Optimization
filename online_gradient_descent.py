@@ -19,8 +19,7 @@ class OnlinePortfolioOGD:
         # Using an n-dimensional simplex K as the convex set
         self.weights = np.ones(self.n) / self.n
 
-        # self.eta  = np.zeros(self.T) # one eta per round
-        self.eta = 0.01
+        self.eta  = np.zeros(self.T+1) # one eta per round
 
         self.G = 0 # factor used to calculate eta
         self.D = 2**(0.5) # factor used to calculate eta
@@ -31,6 +30,7 @@ class OnlinePortfolioOGD:
             self.G = gradMag
 
         self.eta[t] = self.D / (self.G * ((t+1)**0.5)) # t+1 to make rounds 1-indexed
+        print(self.eta[t])
 
     def loss(self, xt, t):
         ''' Log loss function '''
@@ -66,12 +66,14 @@ class OnlinePortfolioOGD:
             L[t] = self.loss(xt, t)
 
             # Line 4 in algorithm 8
-            #Grad[t] = self.gradient(xt, t)
-            #self.computeEta(Grad[t], t)
-            #yNext = X[t] - self.eta[t] * Grad[t]
+            Grad[t] = self.gradient(xt, t)
+            self.computeEta(Grad[t], t)
 
-            yNext = X[t] - (self.eta / ((t+1)**0.5)) * Grad[t]
+            # Get xt for next round
+            yNext = X[t] - self.eta[t] * Grad[t]
+            # yNext = X[t] - (self.eta[t] / ((t+1)**0.5)) * Grad[t]
             xt = cvxpyOgdProjectToK(yNext)
+            # xt = projectToK(yNext)
 
         # Multiply decisions (X) by the actual price relative outcomes to get the 
         # growth of the portfolio in each stock ticker based on the decision made.
@@ -83,7 +85,7 @@ class OnlinePortfolioOGD:
 
 def main():
     # Use ETF data from Stooq
-    TICKERS = ["SPY", "QQQ", "DIA", "IWM", "EFA", "EEM"]
+    TICKERS = TICKERS_SP10
     START = "2020-01-01"
     END = None  # Until current date
 
