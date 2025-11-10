@@ -10,7 +10,7 @@ from best_stock import bestInHindsight
 from projections import projectToK, cvxpyOgdProjectToK
 from data.tickers import *
 
-class OnlinePortfolio:
+class OnlinePortfolioOGD:
     def __init__(self, priceRelatives):
         self.priceRelatives = priceRelatives
         self.T, self.n = priceRelatives.shape
@@ -95,7 +95,7 @@ def main():
     relativePrices = (prices / prices.shift(1)).dropna().to_numpy()
     dates = prices.index[1:] # Shift dates to match the relative price data (will use for plotting)
 
-    portfolio = OnlinePortfolio(relativePrices)
+    portfolio = OnlinePortfolioOGD(relativePrices)
     X, wealth, loss = portfolio.odg()
 
     # For comparison

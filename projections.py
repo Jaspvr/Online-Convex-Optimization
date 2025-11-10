@@ -37,6 +37,31 @@ def cvxpyOnsProjectToK(yt, At):
     return x.value
 
 
+def cvxpyOgdProjectToK(yt, At):
+    '''
+    Same as ONS except simplified since At is I
+    '''
+    n = yt.shape[0] # vector length
+
+    # cvxpy variable: this is what cvxpy will optimize
+    x = cp.Variable(n)
+
+    # Euclidean distance: ||x - y||_2 ^ 2
+    objective = cp.Minimize(cp.sum_squares(x-yt))
+
+    # Simplex constraints
+    constraints = [
+        x >= 0,
+        cp.sum(x) == 1
+    ]
+
+    prob = cp.Problem(objective, constraints)
+    prob.solve()
+
+    return x.value
+
+
+
 def projectToK(y):
         ''' K is defined as an n-dimensional simplex with the rule of x >= 0 and sum of x = 1. 
         This function takes a weight decision vector and projects it to land in K if it does not already.
@@ -55,10 +80,5 @@ def projectToK(y):
 
         shift = (cumsum[lastPositiveIdx] - 1.0) / (lastPositiveIdx + 1.0)
         x = np.maximum(y - shift, 0.0)
-
-        # Ensure sum of weights is exactly 1
-        s = x.sum()
-        if s > 0:
-            x *= 1.0 / s 
 
         return x
