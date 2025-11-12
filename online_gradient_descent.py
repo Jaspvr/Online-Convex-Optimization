@@ -30,7 +30,6 @@ class OnlinePortfolioOGD:
             self.G = gradMag
 
         self.eta[t] = self.D / (self.G * ((t+1)**0.5)) # t+1 to make rounds 1-indexed
-        print(self.eta[t])
 
     def loss(self, xt, t):
         ''' Log loss function '''

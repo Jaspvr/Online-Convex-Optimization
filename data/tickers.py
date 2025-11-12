@@ -11,7 +11,7 @@ TICKERS_GROUP_SP = [
     # Health Care (3)
     'JNJ.US', 'UNH.US', 'PFE.US',
     # Financials (3)
-    'JPM.US', 'BAC.US', 'BLK.US', 'GS.US'
+    'JPM.US', 'BAC.US', 'BLK.US', 'GS.US',
     # Consumer Discretionary (3)
     'AMZN.US', 'HD.US', 'MCD.US',
     # Industrials (3)
