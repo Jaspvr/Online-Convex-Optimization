@@ -116,13 +116,52 @@ def main():
     print("Final wealth (OGD bundles): ", wealthBundles[-1])
 
     # Plot the log wealth growth over time. Use log wealth since it matches with the loss
+    # plt.figure()
+    # plt.plot(dates, np.log(wealthRegular), label="OGD Regular (log-wealth)")
+    # plt.plot(dates, np.log(wealthBundles), label="OGD Bundles (log-wealth)")
+    # plt.plot(dates, np.log(wealthBestStock),
+    #          label=f"Best single stock")
+    # plt.plot(dates, np.log(wealthWorstStock),
+    #          label=f"Worst single stock")
+    # plt.plot(dates, np.log(wealthUniformCRP),
+    #          label=f"Uniform CRP")
+    # plt.plot(dates, np.log(wealthOptimalCRP),
+    #          label=f"Optimal CRP")
+    # plt.title("Online Gradient Descent - Portfolio Log Wealth")
+    # plt.xlabel("date")
+    # plt.ylabel("log wealth")
+    # plt.legend()
+    # plt.tight_layout()
+    # plt.show()
+
+    # Plot the log wealth growth over time. Use log wealth since it matches with the loss
     plt.figure()
     plt.plot(dates, np.log(wealthRegular), label="OGD Regular (log-wealth)")
+    plt.plot(dates, np.log(wealthBundles), label="OGD Bundles (log-wealth)")
+    plt.title("Online Gradient Descent - Portfolio Log Wealth")
+    plt.xlabel("date")
+    plt.ylabel("log wealth")
+    plt.legend()
+    plt.tight_layout()
+    plt.show()
+
+    # Plot the log wealth growth over time. Use log wealth since it matches with the loss
+    plt.figure()
     plt.plot(dates, np.log(wealthBundles), label="OGD Bundles (log-wealth)")
     plt.plot(dates, np.log(wealthBestStock),
              label=f"Best single stock")
     plt.plot(dates, np.log(wealthWorstStock),
              label=f"Worst single stock")
+    plt.title("Online Gradient Descent - Portfolio Log Wealth")
+    plt.xlabel("date")
+    plt.ylabel("log wealth")
+    plt.legend()
+    plt.tight_layout()
+    plt.show()
+
+    # Plot the log wealth growth over time. Use log wealth since it matches with the loss
+    plt.figure()
+    plt.plot(dates, np.log(wealthBundles), label="OGD Bundles (log-wealth)")
     plt.plot(dates, np.log(wealthUniformCRP),
              label=f"Uniform CRP")
     plt.plot(dates, np.log(wealthOptimalCRP),
