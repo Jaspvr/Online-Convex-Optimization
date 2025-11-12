@@ -7,17 +7,18 @@ from projections import projectToK, cvxpyOgdProjectToK
 from data.tickers import *
 from additional_experts_helpers import *
 
-class OnlinePortfolioOGD:
-    def __init__(self, priceRelatives, numBundles, groups):
+class OnlinePortfolioBundlesOGD:
+    def __init__(self, priceRelatives, numStocks, numBundles, groups):
         self.priceRelatives = priceRelatives
-        self.T, self.n = priceRelatives.shape
+        self.T, _ = priceRelatives.shape
+        self.numStocks = numStocks
         self.numBundles = numBundles
         self.groups = groups
         
         # Initialize weights as 1/n for each (x1 in K)
         # Using an n-dimensional simplex K as the convex set
-        self.weights = np.ones(self.n) / self.n
-        self.weightsBundles = np.ones(self.n + self.numBundles) / (self.n + self.numBundles)
+        self.weights = np.ones(self.numStocks) / self.numStocks
+        self.weightsBundles = np.ones(self.numStocks + self.numBundles) / (self.numStocks + self.numBundles)
 
         self.eta  = np.zeros(self.T+1) # one eta per round
 
@@ -30,7 +31,6 @@ class OnlinePortfolioOGD:
             self.G = gradMag
 
         self.eta[t] = self.D / (self.G * ((t+1)**0.5)) # t+1 to make rounds 1-indexed
-        print(self.eta[t])
 
     def loss(self, xt, t):
         ''' Log loss function '''
@@ -56,32 +56,28 @@ class OnlinePortfolioOGD:
         xt = self.weights.copy() # Initial weight spread is uniform distribution
         bundleXt = self.weightsBundles.copy()
 
-        X = np.zeros((self.T, self.n)) # Decisions (weight spreads)
-        bundlesX = np.zeros((self.T, self.n + self.numBundles))
-        Grad = np.zeros((self.T, self.n)) # Gradients
+        X = np.zeros((self.T, self.numStocks)) # Decisions (weight spreads)
+        bundlesX = np.zeros((self.T, self.numStocks + self.numBundles))
+        Grad = np.zeros((self.T, self.numStocks + self.numBundles)) # Gradients
         L = np.zeros(self.T) # Loss vector (1 entry per round)
 
         # Go through each time step and update the weight distribution according to OGD
         for t in range(self.T): 
-            # "Play" xt (observe loss - ft(xt) in textbook. Line 3 of Algorithm 8)
             X[t] = xt
             bundlesX[t] = bundleXt
-            L[t] = self.loss(xt, t)
+            L[t] = self.loss(bundleXt, t)
 
-            # Line 4 in algorithm 8
             Grad[t] = self.gradient(bundleXt, t)
             self.computeEta(Grad[t], t)
 
-            # Get xt for next round
             yNext = bundlesX[t] - self.eta[t] * Grad[t]
             bundleXt = cvxpyOgdProjectToK(yNext)
 
-            xt = eliminateBundles(bundleXt, self.groups, self.n)
+            xt = eliminateBundles(bundleXt, self.groups, self.numStocks)
 
-        # Multiply decisions (X) by the actual price relative outcomes to get the 
-        # growth of the portfolio in each stock ticker based on the decision made.
-        # "growth" is a vector of length T that holds how much the portfolio grew each day.
-        growth = (X * self.priceRelatives).sum(axis=1)
+       
+        priceRelativesNoBundles = self.priceRelatives[:, :self.numStocks]
+        growth = (X * priceRelativesNoBundles).sum(axis=1)
         wealth = growth.cumprod()
         return X, wealth, L
 
@@ -95,14 +91,15 @@ def main():
     groups = [[0, 1, 2, 3], [4, 5, 6], [7, 8, 9, 10], [11, 12, 13], [14, 15, 16], [17, 18, 19]]
 
     prices = downloadPricesStooq(TICKERS, start=START, end=END, min_days=500)
+    numStocks = prices.shape[1]
     print(prices)
-    prices = bundles(prices, groups)
+    pricesBundles = bundles(prices, groups)
 
-    relativePrices = (prices / prices.shift(1)).dropna().to_numpy()
-    dates = prices.index[1:]
+    relativePrices = (pricesBundles / pricesBundles.shift(1)).dropna().to_numpy()
+    dates = pricesBundles.index[1:]
 
     numBundles = 6
-    portfolio = OnlinePortfolioOGD(relativePrices, numBundles, groups)
+    portfolio = OnlinePortfolioBundlesOGD(relativePrices, numStocks, numBundles, groups)
     X, wealth, loss = portfolio.odg()
 
     # For comparison
