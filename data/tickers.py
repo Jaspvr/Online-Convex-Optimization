@@ -7,7 +7,7 @@ TICKERS_ETF = ["SPY", "QQQ", "DIA", "IWM", "EFA", "EEM"]
 
 TICKERS_GROUP_SP = [
     # Technology (4)
-    'AAPL.US', 'MSFT.US', 'NVDA.US', 'META.US',
+    'AAPL.US', 'MSFT.US', 'GOOGL.US', 'META.US',
     # Health Care (3)
     'JNJ.US', 'UNH.US', 'PFE.US',
     # Financials (3)

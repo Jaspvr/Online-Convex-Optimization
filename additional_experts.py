@@ -79,11 +79,13 @@ def main():
     # Ticker order: Tech (4), Health Care (3), Financials (4), Consumer Discretionary (3),
     # Industrials (3), Energy (3)
     TICKERS = TICKERS_GROUP_SP
-    START = "2015-11-01"
-    END = "2025-11-01"
+    START = "2005-11-01"
+    END = "2015-11-01"
     groups = [[0, 1, 2, 3], [4, 5, 6], [7, 8, 9, 10], [11, 12, 13], [14, 15, 16], [17, 18, 19]]
 
     prices = downloadPricesStooq(TICKERS, start=START, end=END, min_days=500)
+    print("Downloaded columns:", list(prices.columns))
+    print("Expected tickers   :", list(TICKERS))
     numStocks = prices.shape[1]
     print(prices)
     pricesBundles = bundles(prices, groups)
