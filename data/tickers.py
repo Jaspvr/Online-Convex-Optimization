@@ -4,3 +4,18 @@ TICKERS_SP20 = ['AAPL.US', 'NVDA.US', 'MSFT.US', 'AMZN.US', 'GOOGL.US', 'GOOG.US
 TICKERS_SP50 = ['AAPL.US', 'NVDA.US', 'MSFT.US', 'AMZN.US', 'GOOGL.US', 'GOOG.US', 'META.US', 'TSLA.US', 'AVGO.US', 'BRK-B.US', 'WMT.US', 'LLY.US', 'JPM.US', 'V.US', 'MA.US', 'ORCL.US', 'XOM.US', 'UNH.US', 'COST.US', 'PG.US', 'HD.US', 'NFLX.US', 'JNJ.US', 'BAC.US', 'CRM.US', 'ABBV.US', 'KO.US', 'TMUS.US', 'CVX.US', 'MRK.US', 'WFC.US', 'CSCO.US', 'ACN.US', 'NOW.US', 'AXP.US', 'MCD.US', 'PEP.US', 'BX.US', 'IBM.US', 'DIS.US', 'LIN.US', 'TMO.US', 'MS.US', 'ABT.US', 'ADBE.US', 'AMD.US', 'PM.US', 'ISRG.US', 'PLTR.US', 'GE.US']
 TICKERS_ETF = ["SPY", "QQQ", "DIA", "IWM", "EFA", "EEM"]
 
+
+TICKERS_GROUP_SP = [
+    # Technology (4)
+    'AAPL.US', 'MSFT.US', 'NVDA.US', 'META.US',
+    # Health Care (3)
+    'JNJ.US', 'UNH.US', 'PFE.US',
+    # Financials (3)
+    'JPM.US', 'BAC.US', 'BLK.US', 'GS.US'
+    # Consumer Discretionary (3)
+    'AMZN.US', 'HD.US', 'MCD.US',
+    # Industrials (3)
+    'CAT.US', 'LMT.US', 'HON.US',
+    # Energy (2)
+    'XOM.US', 'CVX.US', 'COP.US',
+]
