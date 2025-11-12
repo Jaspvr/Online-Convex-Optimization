@@ -3,7 +3,7 @@ import cvxpy as cp
 import matplotlib.pyplot as plt
 
 from data_handling.data_handler import downloadPricesStooq
-from best_stock import best_in_hindsight
+from best_stock import bestInHindsight
 from projections import projectToK
 from data.tickers import *
 

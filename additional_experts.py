@@ -3,10 +3,14 @@ import matplotlib.pyplot as plt
 
 from data_handling.data_handler import downloadPricesStooq
 from best_stock import bestInHindsight
+from worst_stock import worstInHindsight
 from projections import projectToK, cvxpyOgdProjectToK
 from data.tickers import *
 from additional_experts_helpers import *
 from online_gradient_descent import OnlinePortfolioOGD
+from uniform_crp import uniformCRP
+from optimal_crp import optimalCrpWeightsCvx
+
 
 class OnlinePortfolioBundlesOGD:
     def __init__(self, priceRelatives, numStocks, numBundles, groups):
@@ -78,10 +82,10 @@ class OnlinePortfolioBundlesOGD:
 def main():
     # Ticker order: Tech (4), Health Care (3), Financials (4), Consumer Discretionary (3),
     # Industrials (3), Energy (3)
-    TICKERS = TICKERS_GROUP_SP
+    TICKERS = TICKERS_GROUP_SP10
     START = "2007-11-01"
     END = "2015-11-01"
-    groups = [[0, 1, 2, 3], [4, 5, 6], [7, 8, 9, 10], [11, 12, 13], [14, 15, 16], [17, 18, 19]]
+    groups = groups10
 
     prices = downloadPricesStooq(TICKERS, start=START, end=END, min_days=500)
     print("Downloaded columns:", list(prices.columns))
@@ -93,13 +97,16 @@ def main():
     relativePrices = (pricesBundles / pricesBundles.shift(1)).dropna().to_numpy()
     dates = pricesBundles.index[1:]
 
-    numBundles = 6
+    numBundles = len(groups)
     portfolio = OnlinePortfolioBundlesOGD(relativePrices, numStocks, numBundles, groups)
     XBundles, wealthBundles, _ = portfolio.odg()
 
     # For comparison
     relativePrices = (prices / prices.shift(1)).dropna().to_numpy()
     wealthBestStock = bestInHindsight(relativePrices)
+    wealthWorstStock = worstInHindsight(relativePrices)
+    wealthUniformCRP = uniformCRP(relativePrices)
+    _, wealthOptimalCRP = optimalCrpWeightsCvx(relativePrices)
     portfolio = OnlinePortfolioOGD(relativePrices)
     XRegular, wealthRegular, _ = portfolio.odg()
 
@@ -114,6 +121,12 @@ def main():
     plt.plot(dates, np.log(wealthBundles), label="OGD Bundles (log-wealth)")
     plt.plot(dates, np.log(wealthBestStock),
              label=f"Best single stock")
+    plt.plot(dates, np.log(wealthWorstStock),
+             label=f"Worst single stock")
+    plt.plot(dates, np.log(wealthUniformCRP),
+             label=f"Uniform CRP")
+    plt.plot(dates, np.log(wealthOptimalCRP),
+             label=f"Optimal CRP")
     plt.title("Online Gradient Descent - Portfolio Log Wealth")
     plt.xlabel("date")
     plt.ylabel("log wealth")
