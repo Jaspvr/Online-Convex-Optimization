@@ -6,6 +6,7 @@ from best_stock import bestInHindsight
 from projections import projectToK, cvxpyOgdProjectToK
 from data.tickers import *
 from additional_experts_helpers import *
+from online_gradient_descent import OnlinePortfolioOGD
 
 class OnlinePortfolioBundlesOGD:
     def __init__(self, priceRelatives, numStocks, numBundles, groups):
@@ -15,8 +16,6 @@ class OnlinePortfolioBundlesOGD:
         self.numBundles = numBundles
         self.groups = groups
         
-        # Initialize weights as 1/n for each (x1 in K)
-        # Using an n-dimensional simplex K as the convex set
         self.weights = np.ones(self.numStocks) / self.numStocks
         self.weightsBundles = np.ones(self.numStocks + self.numBundles) / (self.numStocks + self.numBundles)
 
@@ -30,15 +29,12 @@ class OnlinePortfolioBundlesOGD:
         if gradMag > self.G:
             self.G = gradMag
 
-        self.eta[t] = self.D / (self.G * ((t+1)**0.5)) # t+1 to make rounds 1-indexed
+        self.eta[t] = self.D / (self.G * ((t+1)**0.5))
 
     def loss(self, xt, t):
         ''' Log loss function '''
-        rt = self.priceRelatives[t] # price relatives that actually happened
+        rt = self.priceRelatives[t]
 
-        # Take the negative log of the growth factor (weights * outcome)
-        # Summing losses gives -log(XT/X0), therefore minimizing this loss is maximizing wealth
-        # (The price relatives ratio XT/X0 indicates how much we have increased our wealth)
         xpMul = max(float(xt @ rt), 1e-10)
         return -np.log(xpMul)
 
@@ -47,8 +43,6 @@ class OnlinePortfolioBundlesOGD:
         of the weights for round t '''
         rt = self.priceRelatives[t]
 
-        # (dloss/dweight) = (d/dweight)(-log(weight @ outcome))
-        # Using chain rule, we get the result gradient: -outcomet / (weightt @ outcomet)
         xpMul = max(float(xt @ rt), 1e-10)
         return -rt / xpMul
 
@@ -61,7 +55,6 @@ class OnlinePortfolioBundlesOGD:
         Grad = np.zeros((self.T, self.numStocks + self.numBundles)) # Gradients
         L = np.zeros(self.T) # Loss vector (1 entry per round)
 
-        # Go through each time step and update the weight distribution according to OGD
         for t in range(self.T): 
             X[t] = xt
             bundlesX[t] = bundleXt
@@ -100,18 +93,23 @@ def main():
 
     numBundles = 6
     portfolio = OnlinePortfolioBundlesOGD(relativePrices, numStocks, numBundles, groups)
-    X, wealth, loss = portfolio.odg()
+    XBundles, wealthBundles, _ = portfolio.odg()
 
     # For comparison
+    relativePrices = (prices / prices.shift(1)).dropna().to_numpy()
     wealthBestStock = bestInHindsight(relativePrices)
+    portfolio = OnlinePortfolioOGD(relativePrices)
+    XRegular, wealthRegular, _ = portfolio.odg()
 
-    print("Weight distributions: ", X) # possibly add simplyfied visualization
-    print("Losses: ", loss)
-    print("Final wealth (OGD): ", wealth[-1])
+    print("Weight distributions regular: ", XRegular)
+    print("Weight distributions bundles: ", XBundles)
+    print("Final wealth (OGD regular): ", wealthRegular[-1])
+    print("Final wealth (OGD bundles): ", wealthBundles[-1])
 
     # Plot the log wealth growth over time. Use log wealth since it matches with the loss
     plt.figure()
-    plt.plot(dates, np.log(wealth), label="OGD (log-wealth)")
+    plt.plot(dates, np.log(wealthRegular), label="OGD Regular (log-wealth)")
+    plt.plot(dates, np.log(wealthBundles), label="OGD Bundles (log-wealth)")
     plt.plot(dates, np.log(wealthBestStock),
              label=f"Best single stock")
     plt.title("Online Gradient Descent - Portfolio Log Wealth")
