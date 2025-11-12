@@ -5,6 +5,7 @@ from data_handling.data_handler import downloadPricesStooq
 from best_stock import bestInHindsight
 from projections import projectToK, cvxpyOgdProjectToK
 from data.tickers import *
+from additional_experts_helpers import *
 
 class OnlinePortfolioOGD:
     def __init__(self, priceRelatives, numBundles, groups):
@@ -83,29 +84,6 @@ class OnlinePortfolioOGD:
         growth = (X * self.priceRelatives).sum(axis=1)
         wealth = growth.cumprod()
         return X, wealth, L
-
-
-def bundles(prices, groups):
-    # prices is all of the closing stock prices for the studied time period
-    # groups is an array that describes how to create bundles
-    # ex. groups = [[0, 1], [2,3]]: two groups, one with 0, 1, the other with 2, 3.
-    df = prices.copy()
-
-    for group in groups:
-        df[df.shape[1]] = df.iloc[:, group].sum(axis=1)  # insert on the right side
-
-    return df
-
-
-def eliminateBundles(weights, groups, n):
-    for k, group in enumerate(groups):
-        # get the weight associated with the group per element of group
-        w = weights[-(len(groups)-k)] / len(groups[k])
-        for col in group:
-            weights[col] += w
-    
-    # Remove group columns
-    return weights[:n]
 
 
 def main():
