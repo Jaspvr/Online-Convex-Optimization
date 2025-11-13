@@ -23,7 +23,7 @@ def randomGroups(n):
 
     # Decide how many groups (each has size >= 3) 
     max_groups = max(1, k // 3)    # at least 3 per group
-    num_groups = random.randint(2, max_groups)
+    num_groups = random.randint(3, max_groups)
 
     # Create random group sizes, each >= 3, summing to k 
     # Start with 3 in each group, then distribute the remaining 'extra' randomly

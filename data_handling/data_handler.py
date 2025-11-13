@@ -1,20 +1,20 @@
 import pandas as pd
 from pandas_datareader import data as pdr
 
-# def fetchStooqClose(ticker, start=None, end=None):
-#     # Get Close prices for a single ticker from Stooq
-#     df = pdr.DataReader(ticker, "stooq", start=pd.to_datetime(start) if start else None,
-#                         end=pd.to_datetime(end) if end else None)
-#     if not isinstance(df, pd.DataFrame) or len(df) == 0:
-#         return None
-#     df = df.sort_index()
-#     if "Close" not in df.columns:
-#         return None
-#     s = df["Close"].rename(ticker)
-
-#     return s if s.notna().sum() > 0 else None
-
 def fetchStooqClose(ticker, start=None, end=None):
+    # Get Close prices for a single ticker from Stooq
+    df = pdr.DataReader(ticker, "stooq", start=pd.to_datetime(start) if start else None,
+                        end=pd.to_datetime(end) if end else None)
+    if not isinstance(df, pd.DataFrame) or len(df) == 0:
+        return None
+    df = df.sort_index()
+    if "Close" not in df.columns:
+        return None
+    s = df["Close"].rename(ticker)
+
+    return s if s.notna().sum() > 0 else None
+
+def fetchStooqCloseErrorHandling(ticker, start=None, end=None):
     try:
         print(f"Downloading {ticker} from Stooq...")
         df = pdr.DataReader(

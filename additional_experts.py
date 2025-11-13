@@ -148,13 +148,9 @@ def main():
     plt.tight_layout()
     plt.show()
 
-    # Plot the log wealth growth over time. Use log wealth since it matches with the loss
     plt.figure()
-    plt.plot(dates, np.log(wealthBundles), label="OGD Bundles (log-wealth)")
-    plt.plot(dates, np.log(wealthBestStock),
-             label=f"Best single stock")
-    plt.plot(dates, np.log(wealthWorstStock),
-             label=f"Worst single stock")
+    plt.plot(dates, (wealthRegular), label="OGD Regular (log-wealth)")
+    plt.plot(dates, (wealthBundles), label="OGD Bundles (log-wealth)")
     plt.title(labels[tuple(TICKERS)])
     plt.xlabel("date")
     plt.ylabel("log wealth")
@@ -162,19 +158,33 @@ def main():
     plt.tight_layout()
     plt.show()
 
-    # Plot the log wealth growth over time. Use log wealth since it matches with the loss
-    plt.figure()
-    plt.plot(dates, np.log(wealthBundles), label="OGD Bundles (log-wealth)")
-    plt.plot(dates, np.log(wealthUniformCRP),
-             label=f"Uniform CRP")
-    plt.plot(dates, np.log(wealthOptimalCRP),
-             label=f"Optimal CRP")
-    plt.title(labels[tuple(TICKERS)])
-    plt.xlabel("date")
-    plt.ylabel("log wealth")
-    plt.legend()
-    plt.tight_layout()
-    plt.show()
+    # # Plot the log wealth growth over time. Use log wealth since it matches with the loss
+    # plt.figure()
+    # plt.plot(dates, np.log(wealthBundles), label="OGD Bundles (log-wealth)")
+    # plt.plot(dates, np.log(wealthBestStock),
+    #          label=f"Best single stock")
+    # plt.plot(dates, np.log(wealthWorstStock),
+    #          label=f"Worst single stock")
+    # plt.title(labels[tuple(TICKERS)])
+    # plt.xlabel("date")
+    # plt.ylabel("log wealth")
+    # plt.legend()
+    # plt.tight_layout()
+    # plt.show()
+
+    # # Plot the log wealth growth over time. Use log wealth since it matches with the loss
+    # plt.figure()
+    # plt.plot(dates, np.log(wealthBundles), label="OGD Bundles (log-wealth)")
+    # plt.plot(dates, np.log(wealthUniformCRP),
+    #          label=f"Uniform CRP")
+    # plt.plot(dates, np.log(wealthOptimalCRP),
+    #          label=f"Optimal CRP")
+    # plt.title(labels[tuple(TICKERS)])
+    # plt.xlabel("date")
+    # plt.ylabel("log wealth")
+    # plt.legend()
+    # plt.tight_layout()
+    # plt.show()
 
     
 if __name__ == "__main__":

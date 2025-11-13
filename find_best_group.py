@@ -15,7 +15,7 @@ def main():
     bestGroup = []
     maxWealth = None
 
-    for i in range(20):
+    for i in range(15):
         print("\niteration: ", i)
         groups = randomGroups(20)
 
@@ -25,10 +25,12 @@ def main():
         portfolio = OnlinePortfolioBundlesOGD(relativePricesBundles, numStocks, numBundles, groups)
         _, wealthBundles, _ = portfolio.odg()
 
-        if not maxWealth or wealthBundles > maxWealth:
+        if not maxWealth or wealthBundles[-1] > maxWealth:
             bestGroup = groups
+            maxWealth = wealthBundles[-1]
     
     print(bestGroup)
+    print(wealthBundles[-1])
 
 
 if __name__ == "__main__":
