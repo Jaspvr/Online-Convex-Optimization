@@ -1,18 +1,47 @@
 import pandas as pd
 from pandas_datareader import data as pdr
 
-def fetchStooqClose(ticker, start=None, end=None):
-    # Get Close prices for a single ticker from Stooq
-    df = pdr.DataReader(ticker, "stooq", start=pd.to_datetime(start) if start else None,
-                        end=pd.to_datetime(end) if end else None)
-    if not isinstance(df, pd.DataFrame) or len(df) == 0:
-        return None
-    df = df.sort_index()
-    if "Close" not in df.columns:
-        return None
-    s = df["Close"].rename(ticker)
+# def fetchStooqClose(ticker, start=None, end=None):
+#     # Get Close prices for a single ticker from Stooq
+#     df = pdr.DataReader(ticker, "stooq", start=pd.to_datetime(start) if start else None,
+#                         end=pd.to_datetime(end) if end else None)
+#     if not isinstance(df, pd.DataFrame) or len(df) == 0:
+#         return None
+#     df = df.sort_index()
+#     if "Close" not in df.columns:
+#         return None
+#     s = df["Close"].rename(ticker)
 
-    return s if s.notna().sum() > 0 else None
+#     return s if s.notna().sum() > 0 else None
+
+def fetchStooqClose(ticker, start=None, end=None):
+    try:
+        print(f"Downloading {ticker} from Stooq...")
+        df = pdr.DataReader(
+            ticker,
+            "stooq",
+            start=pd.to_datetime(start) if start else None,
+            end=pd.to_datetime(end) if end else None,
+        )
+        print(f"  -> got shape {df.shape} for {ticker}")
+    except Exception as e:
+        print(f"ERROR downloading {ticker}: {e}")
+        return None
+
+    if not isinstance(df, pd.DataFrame) or len(df) == 0:
+        print(f"  -> empty DataFrame for {ticker}")
+        return None
+
+    if "Close" not in df.columns:
+        print(f"  -> 'Close' column missing for {ticker}; columns={df.columns}")
+        return None
+
+    s = df["Close"].rename(ticker)
+    if s.notna().sum() == 0:
+        print(f"  -> 'Close' is all NaN for {ticker}")
+        return None
+
+    return s
 
 
 def downloadPricesStooq(tickers, start=None, end=None, min_days=500):

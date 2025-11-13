@@ -10,6 +10,7 @@ from additional_experts_helpers import *
 from online_gradient_descent import OnlinePortfolioOGD
 from uniform_crp import uniformCRP
 from optimal_crp import optimalCrpWeightsCvx
+from best_groups import *
 
 
 class OnlinePortfolioBundlesOGD:
@@ -83,17 +84,19 @@ class OnlinePortfolioBundlesOGD:
 def main():
     # Ticker order: Tech (4), Health Care (3), Financials (4), Consumer Discretionary (3),
     # Industrials (3), Energy (3)
-    TICKERS = TICKERS_GROUP_SP40
+    TICKERS = TICKERS_GROUP_SP20
     START = "2015-11-01"
     END = "2025-11-01"
-    groups = groups10
+    groups = bestGroup20
 
     prices = downloadPricesStooq(TICKERS, start=START, end=END, min_days=500)
     relativePrices = (prices / prices.shift(1)).dropna()
+    print("relp shape: ", relativePrices.shape)
     dates = prices.index[1:]
     numStocks = prices.shape[1]
 
     relativePricesBundles = bundles(relativePrices, groups)
+    print("bundles shape: ", relativePricesBundles.shape)
 
     numBundles = len(groups)
     portfolio = OnlinePortfolioBundlesOGD(relativePricesBundles, numStocks, numBundles, groups)
