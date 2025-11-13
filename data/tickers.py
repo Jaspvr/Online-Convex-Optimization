@@ -30,3 +30,66 @@ TICKERS_GROUP_SP10 = [
     'JPM.US', 'BAC.US', 'BLK.US',
 ]
 groups10 = [[0, 1, 2, 3], [4, 5, 6], [7, 8, 9]]
+
+TICKERS_GROUP_SP40 = [
+    # Information Technology (8)
+    'AAPL.US',  # Apple
+    'MSFT.US',  # Microsoft
+    'GOOGL.US', # Alphabet (Class A)
+    'META.US',  # Meta Platforms
+    'NVDA.US',  # NVIDIA
+    'ADBE.US',  # Adobe
+    'CSCO.US',  # Cisco Systems
+    'CRM.US',   # Salesforce
+
+    # Health Care (7)
+    'JNJ.US',   # Johnson & Johnson
+    'UNH.US',   # UnitedHealth Group
+    'PFE.US',   # Pfizer
+    'ABBV.US',  # AbbVie
+    'MRK.US',   # Merck
+    'LLY.US',   # Eli Lilly
+    'TMO.US',   # Thermo Fisher Scientific
+
+    # Financials (7)
+    'JPM.US',   # JPMorgan Chase
+    'BAC.US',   # Bank of America
+    'BLK.US',   # BlackRock
+    'GS.US',    # Goldman Sachs
+    'WFC.US',   # Wells Fargo
+    'C.US',     # Citigroup
+    'SPGI.US',  # S&P Global
+
+    # Consumer Discretionary (6)
+    'AMZN.US',  # Amazon
+    'HD.US',    # Home Depot
+    'MCD.US',   # McDonald's
+    'LOW.US',   # Lowe's
+    'NKE.US',   # Nike
+    'SBUX.US',  # Starbucks
+
+    # Industrials (6)
+    'CAT.US',   # Caterpillar
+    'LMT.US',   # Lockheed Martin
+    'HON.US',   # Honeywell
+    'GE.US',    # GE Aerospace
+    'UNP.US',   # Union Pacific
+    'BA.US',    # Boeing
+
+    # Energy (6)
+    'XOM.US',   # Exxon Mobil
+    'CVX.US',   # Chevron
+    'COP.US',   # ConocoPhillips
+    'SLB.US',   # Schlumberger
+    'EOG.US',   # EOG Resources
+    'MPC.US',   # Marathon Petroleum
+]
+
+groups40 = [
+    list(range(0, 8)),    # Tech (8)
+    list(range(8, 15)),   # Health Care (7)
+    list(range(15, 22)),  # Financials (7)
+    list(range(22, 28)),  # Consumer Discretionary (6)
+    list(range(28, 34)),  # Industrials (6)
+    list(range(34, 40)),  # Energy (6)
+]

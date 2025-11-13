@@ -13,15 +13,16 @@ from optimal_crp import optimalCrpWeightsCvx
 
 
 class OnlinePortfolioBundlesOGD:
-    def __init__(self, priceRelatives, numStocks, numBundles, groups):
+    def __init__(self, priceRelatives, priceRelativesBundles, numStocks, numBundles, groups):
         self.priceRelatives = priceRelatives
+        self.priceRelativesBundles = priceRelativesBundles
         self.T, _ = priceRelatives.shape
         self.numStocks = numStocks
         self.numBundles = numBundles
         self.groups = groups
         
         self.weights = np.ones(self.numStocks) / self.numStocks
-        self.weightsBundles = np.ones(self.numStocks + self.numBundles) / (self.numStocks + self.numBundles)
+        self.weightsBundles = np.ones(self.numBundles) / (self.numBundles)
 
         self.eta  = np.zeros(self.T+1) # one eta per round
 
@@ -37,7 +38,7 @@ class OnlinePortfolioBundlesOGD:
 
     def loss(self, xt, t):
         ''' Log loss function '''
-        rt = self.priceRelatives[t]
+        rt = self.priceRelativesBundles[t]
 
         xpMul = max(float(xt @ rt), 1e-10)
         return -np.log(xpMul)
@@ -45,7 +46,7 @@ class OnlinePortfolioBundlesOGD:
     def gradient(self, xt, t):
         ''' Function to take the gradient of the loss with respect to the "decision" 
         of the weights for round t '''
-        rt = self.priceRelatives[t]
+        rt = self.priceRelativesBundles[t]
 
         xpMul = max(float(xt @ rt), 1e-10)
         return -rt / xpMul
@@ -55,8 +56,8 @@ class OnlinePortfolioBundlesOGD:
         bundleXt = self.weightsBundles.copy()
 
         X = np.zeros((self.T, self.numStocks)) # Decisions (weight spreads)
-        bundlesX = np.zeros((self.T, self.numStocks + self.numBundles))
-        Grad = np.zeros((self.T, self.numStocks + self.numBundles)) # Gradients
+        bundlesX = np.zeros((self.T, self.numBundles))
+        Grad = np.zeros((self.T, self.numBundles)) # Gradients
         L = np.zeros(self.T) # Loss vector (1 entry per round)
 
         for t in range(self.T): 
@@ -70,11 +71,10 @@ class OnlinePortfolioBundlesOGD:
             yNext = bundlesX[t] - self.eta[t] * Grad[t]
             bundleXt = cvxpyOgdProjectToK(yNext)
 
-            xt = eliminateBundles(bundleXt, self.groups, self.numStocks)
+            xt = distributeBundles(bundleXt, self.groups, self.numStocks)
 
        
-        priceRelativesNoBundles = self.priceRelatives[:, :self.numStocks]
-        growth = (X * priceRelativesNoBundles).sum(axis=1)
+        growth = (X * self.priceRelatives).sum(axis=1)
         wealth = growth.cumprod()
         return X, wealth, L
 
@@ -93,9 +93,10 @@ def main():
     numStocks = prices.shape[1]
 
     relativePricesBundles = bundles(relativePrices, groups)
+    relativePricesBundles = relativePricesBundles[:, numStocks:]
 
     numBundles = len(groups)
-    portfolio = OnlinePortfolioBundlesOGD(relativePricesBundles, numStocks, numBundles, groups)
+    portfolio = OnlinePortfolioBundlesOGD(relativePrices, relativePricesBundles, numStocks, numBundles, groups)
     XBundles, wealthBundles, _ = portfolio.odg()
 
     # For comparison
