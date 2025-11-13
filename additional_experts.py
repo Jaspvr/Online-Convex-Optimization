@@ -86,7 +86,7 @@ def main():
     TICKERS = TICKERS_GROUP_SP40
     START = "2015-11-01"
     END = "2025-11-01"
-    groups = groups40
+    groups = groups10
 
     prices = downloadPricesStooq(TICKERS, start=START, end=END, min_days=500)
     relativePrices = (prices / prices.shift(1)).dropna()
