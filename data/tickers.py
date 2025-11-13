@@ -10,16 +10,17 @@ TICKERS_GROUP_SP20 = [
     'AAPL.US', 'MSFT.US', 'GOOGL.US', 'META.US',
     # Health Care (3)
     'JNJ.US', 'UNH.US', 'PFE.US',
-    # Financials (3)
+    # Financials (4)
     'JPM.US', 'BAC.US', 'BLK.US', 'GS.US',
     # Consumer Discretionary (3)
     'AMZN.US', 'HD.US', 'MCD.US',
     # Industrials (3)
     'CAT.US', 'LMT.US', 'HON.US',
-    # Energy (2)
+    # Energy (3)
     'XOM.US', 'CVX.US', 'COP.US',
 ]
 groups20 = [[0, 1, 2, 3], [4, 5, 6], [7, 8, 9, 10], [11, 12, 13], [14, 15, 16], [17, 18, 19]]
+groups20_2 = [[0, 4, 7, 11], [1, 5, 19], [2, 3, 18, 12], [6, 8, 10], [9, 13, 15], [14, 16, 17]]
 
 TICKERS_GROUP_SP10 = [
     # Technology (4)
@@ -93,3 +94,14 @@ groups40 = [
     list(range(28, 34)),  # Industrials (6)
     list(range(34, 40)),  # Energy (6)
 ]
+
+groups40-2
+
+
+
+labels = {tuple(TICKERS_SP10) : "Portfolio Log Wealth on SP10 Data Set", 
+      tuple(TICKERS_SP20) : "Portfolio Log Wealth on SP20 Data Set",
+      tuple(TICKERS_SP50) : "Portfolio Log Wealth on SP50 Data Set",
+      tuple(TICKERS_GROUP_SP10) : "Portfolio Log Wealth on Group SP10 Data Set",
+      tuple(TICKERS_GROUP_SP20) : "Portfolio Log Wealth on Group SP20 Data Set", 
+      tuple(TICKERS_GROUP_SP40) : "Portfolio Log Wealth on Group SP40 Data Set"}

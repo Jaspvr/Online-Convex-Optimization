@@ -35,3 +35,19 @@ def eliminateBundles(weights, groups, n):
     
     # Remove group columns
     return weights[:n]
+
+
+def eliminateBundles_toBest(weights, groups, rt, n):
+    for k, group in enumerate(groups):
+        
+        # get the weight associated with the group
+        w = weights[-(len(groups)-k)]
+        maxCol = None
+        for col in group:
+            if not maxCol or rt[col] > maxCol:
+                maxCol = col
+        
+        weights[maxCol] += w
+    
+    # Remove group columns
+    return weights[:n]

@@ -70,7 +70,8 @@ class OnlinePortfolioBundlesOGD:
             yNext = bundlesX[t] - self.eta[t] * Grad[t]
             bundleXt = cvxpyOgdProjectToK(yNext)
 
-            xt = eliminateBundles(bundleXt, self.groups, self.numStocks)
+            # xt = eliminateBundles(bundleXt, self.groups, self.numStocks)
+            xt = eliminateBundles_toBest(bundleXt, self.groups, self.priceRelatives[t], self.numStocks)
 
        
         priceRelativesNoBundles = self.priceRelatives[:, :self.numStocks]
@@ -82,10 +83,10 @@ class OnlinePortfolioBundlesOGD:
 def main():
     # Ticker order: Tech (4), Health Care (3), Financials (4), Consumer Discretionary (3),
     # Industrials (3), Energy (3)
-    TICKERS = TICKERS_GROUP_SP20
+    TICKERS = TICKERS_GROUP_SP40
     START = "2015-11-01"
     END = "2025-11-01"
-    groups = groups20
+    groups = groups40
 
     prices = downloadPricesStooq(TICKERS, start=START, end=END, min_days=500)
     relativePrices = (prices / prices.shift(1)).dropna()
@@ -111,6 +112,8 @@ def main():
     print("Weight distributions bundles: ", XBundles)
     print("Final wealth (OGD regular): ", wealthRegular[-1])
     print("Final wealth (OGD bundles): ", wealthBundles[-1])
+    print("Final log wealth (OGD regular): ", np.log(wealthRegular[-1]))
+    print("Final log wealth (OGD bundles): ", np.log(wealthBundles[-1]))
 
     # Plot the log wealth growth over time. Use log wealth since it matches with the loss
     # plt.figure()
@@ -135,7 +138,7 @@ def main():
     plt.figure()
     plt.plot(dates, np.log(wealthRegular), label="OGD Regular (log-wealth)")
     plt.plot(dates, np.log(wealthBundles), label="OGD Bundles (log-wealth)")
-    plt.title("Online Gradient Descent - Portfolio Log Wealth")
+    plt.title(labels[tuple(TICKERS)])
     plt.xlabel("date")
     plt.ylabel("log wealth")
     plt.legend()
@@ -149,7 +152,7 @@ def main():
              label=f"Best single stock")
     plt.plot(dates, np.log(wealthWorstStock),
              label=f"Worst single stock")
-    plt.title("Online Gradient Descent - Portfolio Log Wealth")
+    plt.title(labels[tuple(TICKERS)])
     plt.xlabel("date")
     plt.ylabel("log wealth")
     plt.legend()
@@ -163,7 +166,7 @@ def main():
              label=f"Uniform CRP")
     plt.plot(dates, np.log(wealthOptimalCRP),
              label=f"Optimal CRP")
-    plt.title("Online Gradient Descent - Portfolio Log Wealth")
+    plt.title(labels[tuple(TICKERS)])
     plt.xlabel("date")
     plt.ylabel("log wealth")
     plt.legend()
