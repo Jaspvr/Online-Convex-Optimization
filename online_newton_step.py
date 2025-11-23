@@ -162,7 +162,6 @@ def main():
     plt.ylabel("Portfolio Log Wealth")
     plt.legend()
     plt.tight_layout()
-    plt.tight_layout()
     plt.savefig("Plots/ons_vs_baselines_sp20.pdf")  # vector graphic
     plt.show()
 

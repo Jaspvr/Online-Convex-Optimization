@@ -9,6 +9,8 @@ from data_handling.data_handler import downloadPricesStooq
 from best_stock import bestInHindsight
 from projections import projectToK, cvxpyOgdProjectToK
 from data.tickers import *
+from optimal_crp import optimalCrpWeightsCvx
+from uniform_crp import uniformCRP
 
 class OnlinePortfolioOGD:
     def __init__(self, priceRelatives):
@@ -20,6 +22,7 @@ class OnlinePortfolioOGD:
         self.weights = np.ones(self.n) / self.n
 
         self.eta  = np.zeros(self.T+1) # one eta per round
+        self.etaScale = 25
 
         self.G = 0 # factor used to calculate eta
         self.D = 2**(0.5) # factor used to calculate eta
@@ -69,10 +72,10 @@ class OnlinePortfolioOGD:
             self.computeEta(Grad[t], t)
 
             # Get xt for next round
-            yNext = X[t] - self.eta[t] * Grad[t]
+            yNext = X[t] - self.etaScale * self.eta[t] * Grad[t]
             # yNext = X[t] - (self.eta[t] / ((t+1)**0.5)) * Grad[t]
             xt = cvxpyOgdProjectToK(yNext)
-            # xt = projectToK(yNext)
+
 
         # Multiply decisions (X) by the actual price relative outcomes to get the 
         # growth of the portfolio in each stock ticker based on the decision made.
@@ -84,9 +87,9 @@ class OnlinePortfolioOGD:
 
 def main():
     # Use ETF data from Stooq
-    TICKERS = TICKERS_SP10
-    START = "2020-01-01"
-    END = None  # Until current date
+    TICKERS = TICKERS_GROUP_SP20
+    START = "2015-11-01"
+    END = "2025-11-01"  # Until current date
 
     prices = downloadPricesStooq(TICKERS, start=START, end=END, min_days=500)
     print(prices)
@@ -101,6 +104,8 @@ def main():
 
     # For comparison
     wealthBestStock = bestInHindsight(relativePrices)
+    wealthUniformCRP = uniformCRP(relativePrices)
+    _, wealthOptimalCRP = optimalCrpWeightsCvx(relativePrices)
 
     print("Weight distributions: ", X) # possibly add simplyfied visualization
     print("Losses: ", loss)
@@ -111,11 +116,16 @@ def main():
     plt.plot(dates, np.log(wealth), label="OGD (log-wealth)")
     plt.plot(dates, np.log(wealthBestStock),
              label=f"Best single stock")
-    plt.title("Online Gradient Descent - Portfolio Log Wealth")
-    plt.xlabel("date")
-    plt.ylabel("log wealth")
+    plt.plot(dates, np.log(wealthUniformCRP),
+             label=f"Uniform CRP")
+    plt.plot(dates, np.log(wealthOptimalCRP),
+             label=f"Optimal CRP",linewidth=0.7)
+    plt.title("Online Gradient Descent (Theoretical Learning Rate) vs Baseline Strategies")
+    plt.xlabel("Date")
+    plt.ylabel("Portfolio Log Wealth")
     plt.legend()
     plt.tight_layout()
+    plt.savefig("Plots/ogd_vs_baselines_sp20Group_scaledEta.pdf")  # vector graphic
     plt.show()
 
     
