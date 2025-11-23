@@ -1,5 +1,6 @@
 import pandas as pd
 from pandas_datareader import data as pdr
+import os
 
 def fetchStooqClose(ticker, start=None, end=None):
     # Get Close prices for a single ticker from Stooq
@@ -62,4 +63,25 @@ def downloadPricesStooq(tickers, start=None, end=None, min_days=500):
     if prices.shape[1] < 2 or len(prices) < 2:
         raise RuntimeError("Not enough columns or rows in price data after cleaning")
     
+    return prices
+
+
+def loadOrDownloadPrices(tickers, start=None, end=None, min_days=500, cache_path=None):
+    """Load prices from a local cache if available; otherwise download from Stooq
+    and save to cache_path."""
+    if cache_path is None:
+        tickers_str = "_".join(tickers)
+        cache_path = f"data/stooq_{tickers_str}_{start}_{end}.csv"
+
+    os.makedirs(os.path.dirname(cache_path), exist_ok=True)
+
+    if os.path.exists(cache_path):
+        print(f"Loading cached prices from {cache_path}")
+        prices = pd.read_csv(cache_path, index_col=0, parse_dates=True)
+    else:
+        print("Cache not found, downloading from Stooq...")
+        prices = downloadPricesStooq(tickers, start=start, end=end, min_days=min_days)
+        prices.to_csv(cache_path)
+        print(f"Saved prices to {cache_path}")
+
     return prices

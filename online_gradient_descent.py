@@ -5,7 +5,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-from data_handling.data_handler import downloadPricesStooq
+from data_handling.data_handler import *
 from best_stock import bestInHindsight
 from projections import projectToK, cvxpyOgdProjectToK
 from data.tickers import *
@@ -87,11 +87,14 @@ class OnlinePortfolioOGD:
 
 def main():
     # Use ETF data from Stooq
-    TICKERS = TICKERS_GROUP_SP20
+    TICKERS = TICKERS_SP20
     START = "2015-11-01"
     END = "2025-11-01"  # Until current date
 
-    prices = downloadPricesStooq(TICKERS, start=START, end=END, min_days=500)
+    # prices = downloadPricesStooq(TICKERS, start=START, end=END, min_days=500)
+    cache_file = "data/sp20_2015-11-01_2025-11-01.csv"
+    prices = loadOrDownloadPrices(TICKERS, start=START, end=END,
+                                 min_days=500, cache_path=cache_file)
     print(prices)
 
     # Form the table into T x n time series data
@@ -119,8 +122,8 @@ def main():
     plt.plot(dates, np.log(wealthUniformCRP),
              label=f"Uniform CRP")
     plt.plot(dates, np.log(wealthOptimalCRP),
-             label=f"Optimal CRP",linewidth=0.7)
-    plt.title("Online Gradient Descent (Theoretical Learning Rate) vs Baseline Strategies")
+             label=f"Optimal CRP")
+    plt.title("Online Gradient Descent vs Baseline Strategies")
     plt.xlabel("Date")
     plt.ylabel("Portfolio Log Wealth")
     plt.legend()

@@ -5,6 +5,9 @@ TICKERS_SP50 = ['AAPL.US', 'NVDA.US', 'MSFT.US', 'AMZN.US', 'GOOGL.US', 'GOOG.US
 TICKERS_ETF = ["SPY", "QQQ", "DIA", "IWM", "EFA", "EEM"]
 
 
+TICKERS_SP20 = ['AAPL.US', 'GS.US', 'MSFT.US', 'AMZN.US', 'GOOGL.US', 'GOOG.US', 'META.US', 'TSLA.US', 'AVGO.US', 'BRK-B.US', 'WMT.US', 'LLY.US', 'JPM.US', 'V.US', 'MA.US', 'ORCL.US', 'XOM.US', 'UNH.US', 'COST.US', 'PG.US']
+
+
 TICKERS_GROUP_SP20 = [
     # Technology (4)
     'AAPL.US', 'MSFT.US', 'GOOGL.US', 'META.US',
