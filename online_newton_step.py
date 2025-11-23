@@ -6,9 +6,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from data_handling.data_handler import downloadPricesStooq
-from projections import cvxpyOnsProjectToK, projectToK
+from projections import *
 from best_stock import bestInHindsight
 from data.tickers import *
+from optimal_crp import optimalCrpWeightsCvx
+from uniform_crp import uniformCRP
 
 class OnlinePortfolio:
     def __init__(self, data):
@@ -120,9 +122,9 @@ class OnlinePortfolio:
 
 def main():
     # Use ETF data from Stooq
-    TICKERS = ["SPY", "QQQ", "DIA", "IWM", "EFA", "EEM"]
-    START = "2020-01-01"
-    END = None  # Until current date
+    TICKERS = TICKERS_GROUP_SP20
+    START = "2015-11-01"
+    END = "2025-11-01"  # Until current date
 
     prices = downloadPricesStooq(TICKERS, start=START, end=END, min_days=500)
     print(prices)
@@ -136,23 +138,48 @@ def main():
     portfolio = OnlinePortfolio(relativePrices)
     X, wealth, loss = portfolio.ons(alpha)
 
+    # Comparison
+    wealthUniformCRP = uniformCRP(relativePrices)
+    _, wealthOptimalCRP = optimalCrpWeightsCvx(relativePrices)
     wealthBestStock = bestInHindsight(relativePrices)
 
     print("Weight distributions: ", X)
     print("Losses: ", loss)
     print("Final wealth (ONS): ", wealth[-1])
+    print("Final log wealth (ONS): ", np.log(wealth[-1]))
 
     # Plot the log wealth growth over time. Use log wealth since it matches with the loss
     plt.figure()
     plt.plot(dates, np.log(wealth), label="ONS (log-wealth)")
     plt.plot(dates, np.log(wealthBestStock),
              label=f"Best single stock")
-    plt.title("Online Newton Step - Portfolio Log Wealth")
-    plt.xlabel("date")
-    plt.ylabel("log wealth")
+    plt.plot(dates, np.log(wealthUniformCRP),
+             label=f"Uniform CRP")
+    plt.plot(dates, np.log(wealthOptimalCRP),
+             label=f"Optimal CRP")
+    plt.title("Online Newton Step vs Baseline Strategies")
+    plt.xlabel("Date")
+    plt.ylabel("Portfolio Log Wealth")
     plt.legend()
     plt.tight_layout()
+    plt.tight_layout()
+    plt.savefig("Plots/ons_vs_baselines_sp20.pdf")  # vector graphic
     plt.show()
+
+
+     # # Plot the log wealth growth over time. Use log wealth since it matches with the loss
+    # plt.figure()
+    # plt.plot(dates, np.log(wealthBundles), label="OGD Bundles (log-wealth)")
+    # plt.plot(dates, np.log(wealthBestStock),
+    #          label=f"Best single stock")
+    # plt.plot(dates, np.log(wealthWorstStock),
+    #          label=f"Worst single stock")
+    # plt.title(labels[tuple(TICKERS)])
+    # plt.xlabel("date")
+    # plt.ylabel("log wealth")
+    # plt.legend()
+    # plt.tight_layout()
+    # plt.show()
 
     
 if __name__ == "__main__":
