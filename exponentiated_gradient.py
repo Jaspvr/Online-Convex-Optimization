@@ -17,6 +17,8 @@ class OnlinePortfolio:
         self.T, self.n = data.shape # number of trading periods and number of stocks
         self.c = 1 # smallest price relative
         self.C = 1 # largest price relative
+
+        self.learnScalar = 1
         
         # Initialize weights as 1/n for each (x1 in K)
         # Using an n-dimensional simplex K as the convex set
@@ -59,10 +61,10 @@ class OnlinePortfolio:
             L[t] = self.loss(xt, t)
             gradt = self.gradient(xt, t)
 
-            eta = self.computeEta(self.data[t])
+            eta = self.learnScalar * self.computeEta(self.data[t])
 
             # Use the previous time step's xt (xt not updated yet here)
-            yt = xt * np.exp(eta * gradt)
+            yt = xt * np.exp(-eta * gradt)
 
             # Normalize back to simplex by dividing by sum from PLG
             xt = yt / sum(yt)
@@ -105,16 +107,22 @@ def main():
     print("Losses: ", loss)
     print("Final wealth (EG): ", wealth[-1])
 
+
     # Plot the log wealth growth over time. Use log wealth since it matches with the loss
     plt.figure()
-    plt.plot(dates, np.log(wealth), label="EG (log-wealth)")
-    plt.plot(dates, np.log(wealthBestStock),
-             label=f"Best single stock")
-    plt.title("Exponentiated Gradient - Portfolio Log Wealth")
-    plt.xlabel("date")
-    plt.ylabel("log wealth")
+    plt.plot(dates, np.log(wealth), label="EG")
+    # plt.plot(dates, np.log(wealthBestStock),
+    #          label=f"Best single stock")
+    plt.plot(dates, np.log(wealthUniformCRP),
+             label=f"Uniform CRP")
+    plt.plot(dates, np.log(wealthOptimalCRP),
+             label=f"Optimal CRP")
+    plt.title("Exponentiated Gradient vs Baseline Strategies")
+    plt.xlabel("Date")
+    plt.ylabel("Portfolio Log Wealth")
     plt.legend()
     plt.tight_layout()
+    plt.savefig("Plots/eg_vs_baselines_sp20.pdf")  #
     plt.show()
 
     
