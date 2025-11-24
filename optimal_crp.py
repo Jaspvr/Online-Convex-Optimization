@@ -65,6 +65,7 @@ def optimalCrpWeights(rt, maxIter=5000, stepSize=0.01, tol=1e-8):
     # Wealth trajectory of the CRP using fixed xt
     wealth_crp = np.cumprod(rt @ xt)
 
+    print("optimal crp weights:", xt)
     return xt, wealth_crp
 
 
