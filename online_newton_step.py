@@ -53,26 +53,6 @@ class OnlinePortfolio:
         # (dloss/dweight) = (d/dweight)(-log(weight @ outcome))
         xpMul = max(float(xt @ pt), 1e-10)
         return -pt / xpMul
-    
-    def simpleProjectToK(self, yt, At):
-        ''' This function projects onto the simplex (sum of weights = 1, each weight >= 0).
-        ONS accomplishes this by finding the closest feasible portfolio to y in the At induced
-        norm ('At' takes into account 2nd order information). Essentially we project back 
-        using curvature-aware distance.
-        '''
-
-        # To get this projection, we need to find x on the simplex that minimizes
-        # transpose(x-y)*A*(x-y). The gradient of this wrt x is A(x-y). What we can
-        # do is gradient descent on this minimization by using repeated euclidean
-        # projections while reducing x by its gradient each time to approach the solution
-
-        alpha = 1e-3 # This should be improved upon/researched further
-        xt = projectToK(yt)
-        for _ in range(50):
-            gt = At @ (xt - yt)
-            xt = projectToK(xt - alpha * gt)
-
-        return xt
 
     def ons(self, alpha):
         ''' Online Newton Step function '''
