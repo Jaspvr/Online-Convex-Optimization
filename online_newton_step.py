@@ -5,7 +5,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-from data_handling.data_handler import downloadPricesStooq
+from data_handling.data_handler import *
 from projections import *
 from best_stock import bestInHindsight
 from data.tickers import *
@@ -102,11 +102,16 @@ class OnlinePortfolio:
 
 def main():
     # Use ETF data from Stooq
-    TICKERS = TICKERS_GROUP_SP20
+    TICKERS = TICKERS_SP20
     START = "2015-11-01"
     END = "2025-11-01"  # Until current date
 
-    prices = downloadPricesStooq(TICKERS, start=START, end=END, min_days=500)
+    # prices = downloadPricesStooq(TICKERS, start=START, end=END, min_days=500)
+    # cache_file = "data/sp20Group_2015-11-01_2025-11-01.csv"
+    # cache_file = "data/sp20_2015-11-01_2025-11-01.csv" # GS instead of NVIDIA
+    cache_file = "data/sp20new_2015-11-01_2025-11-01.csv" # with nvidia
+    prices = loadOrDownloadPrices(TICKERS, start=START, end=END,
+                                 min_days=500, cache_path=cache_file)
     print(prices)
 
     # Form the table into T x n time series data
@@ -131,8 +136,8 @@ def main():
     # Plot the log wealth growth over time. Use log wealth since it matches with the loss
     plt.figure()
     plt.plot(dates, np.log(wealth), label="ONS (log-wealth)")
-    plt.plot(dates, np.log(wealthBestStock),
-             label=f"Best single stock")
+    # plt.plot(dates, np.log(wealthBestStock),
+    #          label=f"Best single stock")
     plt.plot(dates, np.log(wealthUniformCRP),
              label=f"Uniform CRP")
     plt.plot(dates, np.log(wealthOptimalCRP),
@@ -142,7 +147,7 @@ def main():
     plt.ylabel("Portfolio Log Wealth")
     plt.legend()
     plt.tight_layout()
-    plt.savefig("Plots/ons_vs_baselines_sp20.pdf")  # vector graphic
+    plt.savefig("Plots/ons_vs_baselines_sp20_scaledEta.pdf")  # vector graphic
     plt.show()
 
 

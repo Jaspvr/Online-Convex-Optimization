@@ -5,9 +5,11 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-from data_handling.data_handler import downloadPricesStooq
+from data_handling.data_handler import *
 from best_stock import bestInHindsight
 from data.tickers import *
+from optimal_crp import optimalCrpWeightsCvx
+from uniform_crp import uniformCRP
 
 class OnlinePortfolio:
     def __init__(self, data):
@@ -74,12 +76,17 @@ class OnlinePortfolio:
 
 def main():
     # Use ETF data from Stooq
-    TICKERS = ["SPY", "QQQ", "DIA", "IWM", "EFA", "EEM"]
+    TICKERS = TICKERS_SP20
     START = "2020-01-01"
-    END = None  # Until current date
+    END = "2025-11-01"  # Until current date
 
-    prices = downloadPricesStooq(TICKERS, start=START, end=END, min_days=500)
-    print(prices)
+    # prices = downloadPricesStooq(TICKERS, start=START, end=END, min_days=500)
+    # cache_file = "data/sp20Group_2015-11-01_2025-11-01.csv"
+    # cache_file = "data/sp20_2015-11-01_2025-11-01.csv" # GS instead of NVIDIA
+    cache_file = "data/sp20new_2015-11-01_2025-11-01.csv" # with nvidia
+    prices = loadOrDownloadPrices(TICKERS, start=START, end=END,
+                                 min_days=500, cache_path=cache_file)
+    # print(prices)
 
     # Form the table into T x n time series data
     # Get the ratios of the prices compared to the previous day: xt = Pt / Pt-1
@@ -89,6 +96,9 @@ def main():
     portfolio = OnlinePortfolio(relativePrices)
     X, wealth, loss = portfolio.eg()
 
+    # For comparison
+    wealthUniformCRP = uniformCRP(relativePrices)
+    _, wealthOptimalCRP = optimalCrpWeightsCvx(relativePrices)
     wealthBestStock = bestInHindsight(relativePrices)
 
     print("Weight distributions: ", X)
