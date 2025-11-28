@@ -1,7 +1,3 @@
-# Online Newton Step (Algorithm 12 in Introduction to Online Convex Optimization - Elad Hazan)
-#  for portfolio selection
-# Data source: Stooq via pandas_datareader
-
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -11,6 +7,7 @@ from best_stock import bestInHindsight
 from data.tickers import *
 from optimal_crp import optimalCrpWeightsCvx
 from uniform_crp import uniformCRP
+from computeAtG import commputeAtG
 
 class OnlinePortfolio:
     def __init__(self, data):
@@ -45,7 +42,7 @@ class OnlinePortfolio:
         xpMul = max(float(xt @ pt), 1e-10)
         return -pt / xpMul
 
-    def ons(self, alpha):
+    def ons(self, alpha, p):
         ''' Online Newton Step function '''
         xt = self.weights.copy()
 
@@ -68,9 +65,8 @@ class OnlinePortfolio:
             At  = At + np.outer(gradt, gradt)
 
             # Newton step / Adagrad step
-            # np.linalg.solve(a, b) computes x = a^(-1)b from ax = b
-            invAg = np.linalg.solve(At, gradt)
-            yt = xt - (1.0 / self.gamma) * invAg
+            atG = commputeAtG
+            yt = xt - (1.0 / self.gamma) * atG
 
             xt  = cvxpyOnsProjectToK(yt, At)
 
@@ -83,13 +79,14 @@ class OnlinePortfolio:
 def main():
     # Use ETF data from Stooq
     TICKERS = TICKERS_SP20
-    START = "2015-11-01"
-    END = "2025-11-01"  # Until current date
+    START = "2005-11-01"
+    END = "2015-10-31"  # Until current date
 
     # prices = downloadPricesStooq(TICKERS, start=START, end=END, min_days=500)
     # cache_file = "data/sp20Group_2015-11-01_2025-11-01.csv"
     # cache_file = "data/sp20_2015-11-01_2025-11-01.csv" # GS instead of NVIDIA
-    cache_file = "data/sp20new_2015-11-01_2025-11-01.csv" # with nvidia
+    # cache_file = "data/sp20new_2015-11-01_2025-11-01.csv" # with nvidia
+    cache_file = "data/sp20new_2005-11-01_2015-11-01.csv" # with nvidia 2005-2015
     prices = loadOrDownloadPrices(TICKERS, start=START, end=END,
                                  min_days=500, cache_path=cache_file)
     print(prices)
