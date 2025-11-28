@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-from data_handling.data_handler import downloadPricesStooq
+from data_handling.data_handler import downloadPricesStooq, loadOrDownloadPrices
 from best_stock import bestInHindsight
 from worst_stock import worstInHindsight
 from projections import projectToK, cvxpyOgdProjectToK
@@ -20,6 +20,8 @@ class OnlinePortfolioBundlesOGD:
         self.numStocks = numStocks
         self.numBundles = numBundles
         self.groups = groups
+
+        self.etaScalar = 20
         
         self.weights = np.ones(self.numStocks) / self.numStocks
         self.weightsBundles = np.ones(self.numStocks + self.numBundles) / (self.numStocks + self.numBundles)
@@ -68,7 +70,7 @@ class OnlinePortfolioBundlesOGD:
             Grad[t] = self.gradient(bundleXt, t)
             self.computeEta(Grad[t], t)
 
-            yNext = bundlesX[t] - self.eta[t] * Grad[t]
+            yNext = bundlesX[t] - self.etaScalar * self.eta[t] * Grad[t]
             bundleXt = cvxpyOgdProjectToK(yNext)
 
             # xt = eliminateBundles(bundleXt, self.groups, self.numStocks)
@@ -89,7 +91,13 @@ def main():
     END = "2025-11-01"
     groups = bestGroup20
 
-    prices = downloadPricesStooq(TICKERS, start=START, end=END, min_days=500)
+    # prices = downloadPricesStooq(TICKERS, start=START, end=END, min_days=500)
+     # cache_file = "data/sp20Group_2015-11-01_2025-11-01.csv"
+    # cache_file = "data/sp20_2015-11-01_2025-11-01.csv" # GS instead of NVIDIA
+    cache_file = "data/sp20new_2015-11-01_2025-11-01.csv" # with nvidia
+    prices = loadOrDownloadPrices(TICKERS, start=START, end=END,
+                                 min_days=500, cache_path=cache_file)
+    
     relativePrices = (prices / prices.shift(1)).dropna()
     print("relp shape: ", relativePrices.shape)
     dates = prices.index[1:]
