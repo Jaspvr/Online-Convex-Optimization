@@ -6,11 +6,11 @@ from best_stock import bestInHindsight
 from data.tickers import *
 from optimal_crp import optimalCrpWeightsCvx
 from uniform_crp import uniformCRP
-from online_newton_step import OnlinePortfolio
+from newton_ada import OnlinePortfolio
 
 def commputeAtG(A, grad, p):
     """ONS updates with A^{-1}, AdaGrad updates with A^{-1/2}
-    here we parametrize the exponent, giving A^{-p}@grad"""
+    here we parametrize the exponent, giving A^{p}@grad"""
 
     # Use A^p = Q Λ^p Q^T
     eigenValues, eigenVectors = np.linalg.eigh(A)
@@ -42,14 +42,14 @@ def getBestP():
     dates = prices.index[1:]
 
     alpha = 1
-    portfolio = OnlinePortfolio(relativePrices)
     
     maxW = 0
-    bestP = -1
+    bestP = -2
     ps = np.linspace(-0.5, -1.0, 11)
     for p in ps:
+        portfolio = OnlinePortfolio(relativePrices)
         _, wealth, _ = portfolio.ons(alpha, p)
-        if maxW < wealth:
+        if maxW < wealth[-1]:
             bestP = p
 
-    return bestP
+    return bestP, maxW
