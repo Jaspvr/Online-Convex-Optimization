@@ -65,7 +65,7 @@ class OnlinePortfolio:
             At  = At + np.outer(gradt, gradt)
 
             # Newton step / Adagrad step
-            atG = commputeAtG
+            atG = commputeAtG(At, gradt, p)
             yt = xt - (1.0 / self.gamma) * atG
 
             xt  = cvxpyOnsProjectToK(yt, At)
