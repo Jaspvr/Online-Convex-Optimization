@@ -53,3 +53,10 @@ def getBestP():
             bestP = p
 
     return bestP, maxW
+
+
+def main():
+    return getBestP()
+
+if __name__ == "__main__":
+    main()
