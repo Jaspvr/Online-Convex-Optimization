@@ -13,7 +13,7 @@ def commputeAtG(A, grad, p):
     here we parametrize the exponent, giving A^{-p}@grad"""
 
     # Use A^p = Q Λ^p Q^T
-    eigenValues, eigenVectors = np.ligalg.eigh(A)
+    eigenValues, eigenVectors = np.linalg.eigh(A)
     eigenValues = np.clip(eigenValues, 1e-10, None)
     eigenValuesP = eigenValues ** p
 
