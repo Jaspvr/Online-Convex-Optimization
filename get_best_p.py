@@ -6,8 +6,8 @@ def main():
     # START = "2005-11-01"
     # END = "2015-10-31" 
 
-    START = "2015-11-01"
-    END = "2025-11-01"  
+    START = "2005-11-01"
+    END = "2015-11-01"  
 
     # prices = downloadPricesStooq(TICKERS, start=START, end=END, min_days=500)
     # cache_file = "data/sp20Group_2015-11-01_2025-11-01.csv"
@@ -23,7 +23,7 @@ def main():
     
     maxW = 0
     bestP = -2
-    ps = np.linspace(-0.5, -1.0, 11)
+    ps = np.linspace(0.0, -1.0, 21)
     for p in ps:
         portfolio = OnlinePortfolio(relativePrices)
         _, wealth, _ = portfolio.ons(alpha, p)

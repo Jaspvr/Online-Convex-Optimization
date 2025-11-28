@@ -112,7 +112,6 @@ def main():
     cache_file = "data/sp20new_2015-11-01_2025-11-01.csv" # with nvidia
     prices = loadOrDownloadPrices(TICKERS, start=START, end=END,
                                  min_days=500, cache_path=cache_file)
-    print(prices)
 
     # Form the table into T x n time series data
     # Get the ratios of the prices compared to the previous day: xt = Pt / Pt-1
