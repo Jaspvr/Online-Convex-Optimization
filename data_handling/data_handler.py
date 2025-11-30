@@ -2,48 +2,18 @@ import pandas as pd
 from pandas_datareader import data as pdr
 import os
 
-def fetchStooqClose(ticker, start=None, end=None):
-    # Get Close prices for a single ticker from Stooq
-    df = pdr.DataReader(ticker, "stooq", start=pd.to_datetime(start) if start else None,
-                        end=pd.to_datetime(end) if end else None)
-    if not isinstance(df, pd.DataFrame) or len(df) == 0:
-        return None
-    df = df.sort_index()
-    if "Close" not in df.columns:
-        return None
-    s = df["Close"].rename(ticker)
+# def fetchStooqClose(ticker, start=None, end=None):
+#     # Get Close prices for a single ticker from Stooq
+#     df = pdr.DataReader(ticker, "stooq", start=pd.to_datetime(start) if start else None,
+#                         end=pd.to_datetime(end) if end else None)
+#     if not isinstance(df, pd.DataFrame) or len(df) == 0:
+#         return None
+#     df = df.sort_index()
+#     if "Close" not in df.columns:
+#         return None
+#     s = df["Close"].rename(ticker)
 
-    return s if s.notna().sum() > 0 else None
-
-def fetchStooqCloseErrorHandling(ticker, start=None, end=None):
-    try:
-        print(f"Downloading {ticker} from Stooq...")
-        df = pdr.DataReader(
-            ticker,
-            "stooq",
-            start=pd.to_datetime(start) if start else None,
-            end=pd.to_datetime(end) if end else None,
-        )
-        print(f"  -> got shape {df.shape} for {ticker}")
-    except Exception as e:
-        print(f"ERROR downloading {ticker}: {e}")
-        return None
-
-    if not isinstance(df, pd.DataFrame) or len(df) == 0:
-        print(f"  -> empty DataFrame for {ticker}")
-        return None
-
-    if "Close" not in df.columns:
-        print(f"  -> 'Close' column missing for {ticker}; columns={df.columns}")
-        return None
-
-    s = df["Close"].rename(ticker)
-    if s.notna().sum() == 0:
-        print(f"  -> 'Close' is all NaN for {ticker}")
-        return None
-
-    return s
-
+#     return s if s.notna().sum() > 0 else None
 
 def downloadPricesStooq(tickers, start=None, end=None, min_days=500):
     series = []
@@ -81,6 +51,123 @@ def loadOrDownloadPrices(tickers, start=None, end=None, min_days=500, cache_path
     else:
         print("Cache not found, downloading from Stooq...")
         prices = downloadPricesStooq(tickers, start=start, end=end, min_days=min_days)
+        prices.to_csv(cache_path)
+        print(f"Saved prices to {cache_path}")
+
+    return prices
+
+
+def fetchStooqClose(ticker, start=None, end=None):
+    # Get Close prices for a single ticker from Stooq
+    df = pdr.DataReader(
+        ticker, "stooq",
+        start=pd.to_datetime(start) if start else None,
+        end=pd.to_datetime(end) if end else None,
+    )
+    if not isinstance(df, pd.DataFrame) or len(df) == 0:
+        print(f"[fetchStooqClose] No DataFrame or empty for {ticker}")
+        return None
+
+    df = df.sort_index()
+    if "Close" not in df.columns:
+        print(f"[fetchStooqClose] No 'Close' column for {ticker}")
+        return None
+
+    s = df["Close"].rename(ticker)
+    if s.notna().sum() == 0:
+        print(f"[fetchStooqClose] All NaNs for {ticker}")
+        return None
+
+    return s
+
+def downloadPricesStooq_debug(tickers, start=None, end=None, min_days=500):
+    """
+    Debug version of downloadPricesStooq:
+    - Same signature and return type.
+    - Prints what gets dropped at each cleaning step.
+    """
+    series = []
+    print("=== Fetching individual series ===")
+    for t in tickers:
+        s = fetchStooqClose(t, start=start, end=end)
+        if s is None:
+            print(f"Ticker {t}: FAILED (no usable data)")
+            continue
+
+        print(
+            f"Ticker {t}: non-NaN count = {s.notna().sum()}, "
+            f"range = [{s.index.min().date()} .. {s.index.max().date()}]"
+        )
+        series.append(s)
+
+    if not series:
+        raise RuntimeError("All Stooq downloads failed")
+
+    # Step 1: raw outer-joined table (no dropping yet)
+    raw = pd.concat(series, axis=1, join="outer").sort_index()
+    print("\n=== After outer concat (raw) ===")
+    print(f"Shape: {raw.shape}")
+    print(f"Date range: [{raw.index.min().date()} .. {raw.index.max().date()}]")
+    print("NaN counts per column (raw):")
+    print(raw.isna().sum())
+
+    # Step 2: column filter by min_days (same as dropna(axis=1, thresh=min_days))
+    cols_before = list(raw.columns)
+    prices_cols_filtered = raw.dropna(axis=1, thresh=min_days)
+    cols_after = list(prices_cols_filtered.columns)
+    dropped_cols = sorted(set(cols_before) - set(cols_after))
+
+    print("\n=== After column filter (thresh=min_days) ===")
+    print(f"Shape: {prices_cols_filtered.shape}")
+    print(f"Date range: [{prices_cols_filtered.index.min().date()} .. {prices_cols_filtered.index.max().date()}]")
+    if dropped_cols:
+        print("Dropped tickers (too few non-NaN days):", dropped_cols)
+    else:
+        print("No tickers dropped at column filter stage.")
+    print("NaN counts per column (after column filter):")
+    print(prices_cols_filtered.isna().sum())
+
+    # Step 3: row dropna (this is where early years often get chopped)
+    prices_final = prices_cols_filtered.dropna()
+    print("\n=== After row dropna() (final) ===")
+    print(f"Shape: {prices_final.shape}")
+    print(f"Date range: [{prices_final.index.min().date()} .. {prices_final.index.max().date()}]")
+
+    rows_before = len(prices_cols_filtered)
+    rows_after = len(prices_final)
+    print(f"Rows removed by dropna(): {rows_before - rows_after}")
+
+    print("\nFirst 10 dates (after column filter, before row dropna):")
+    print(prices_cols_filtered.head(10))
+
+    print("\nFirst 10 dates (after row dropna):")
+    print(prices_final.head(10))
+
+    if prices_final.shape[1] < 2 or len(prices_final) < 2:
+        raise RuntimeError("Not enough columns or rows in price data after cleaning")
+
+    return prices_final
+
+
+def loadOrDownloadPrices_debug(tickers, start=None, end=None, min_days=500, cache_path=None):
+    """
+    Debug version of loadOrDownloadPrices:
+    - Same parameters and cache behavior.
+    - Uses downloadPricesStooq_debug when cache is missing so you can
+      see exactly why data is dropped / start date shifts.
+    """
+    if cache_path is None:
+        tickers_str = "_".join(tickers)
+        cache_path = f"data/stooq_{tickers_str}_{start}_{end}.csv"
+
+    os.makedirs(os.path.dirname(cache_path), exist_ok=True)
+
+    if os.path.exists(cache_path):
+        print(f"Loading cached prices from {cache_path}")
+        prices = pd.read_csv(cache_path, index_col=0, parse_dates=True)
+    else:
+        print("Cache not found, downloading from Stooq (DEBUG mode)...")
+        prices = downloadPricesStooq_debug(tickers, start=start, end=end, min_days=min_days)
         prices.to_csv(cache_path)
         print(f"Saved prices to {cache_path}")
 

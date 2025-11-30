@@ -12,8 +12,8 @@ def main():
     # prices = downloadPricesStooq(TICKERS, start=START, end=END, min_days=500)
     # cache_file = "data/sp20Group_2015-11-01_2025-11-01.csv"
     # cache_file = "data/sp20_2015-11-01_2025-11-01.csv" # GS instead of NVIDIA
-    cache_file = "data/sp20new_2015-11-01_2025-11-01.csv" # with nvidia
-    # cache_file = "data/sp20new_2005-11-01_2015-11-01.csv" # with nvidia 2005-2015
+    # cache_file = "data/sp20new_2015-11-01_2025-11-01.csv" # with nvidia
+    cache_file = "data/sp20new_2005-11-01_2015-11-01.csv" # with nvidia 2005-2015 - really like 2012-2015
     prices = loadOrDownloadPrices(TICKERS, start=START, end=END,
                                  min_days=500, cache_path=cache_file)
 

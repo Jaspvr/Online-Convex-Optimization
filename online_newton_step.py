@@ -103,14 +103,20 @@ class OnlinePortfolio:
 def main():
     # Use ETF data from Stooq
     TICKERS = TICKERS_SP20
-    START = "2015-11-01"
-    END = "2025-11-01"  # Until current date
+    START = "2005-11-01"
+    END = "2015-11-01"  # Until current date
 
     # prices = downloadPricesStooq(TICKERS, start=START, end=END, min_days=500)
     # cache_file = "data/sp20Group_2015-11-01_2025-11-01.csv"
     # cache_file = "data/sp20_2015-11-01_2025-11-01.csv" # GS instead of NVIDIA
+
     cache_file = "data/sp20new_2015-11-01_2025-11-01.csv" # with nvidia
-    prices = loadOrDownloadPrices(TICKERS, start=START, end=END,
+
+    # cache_file = "data/ACTUALsp20new_2005-11-01_2015-11-01.csv" # with nvidia
+    
+    # prices = loadOrDownloadPrices(TICKERS, start=START, end=END,
+    #                              min_days=500, cache_path=cache_file)
+    prices = loadOrDownloadPrices_debug(TICKERS, start=START, end=END,
                                  min_days=500, cache_path=cache_file)
 
     # Form the table into T x n time series data
