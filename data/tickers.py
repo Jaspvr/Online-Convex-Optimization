@@ -7,6 +7,14 @@ TICKERS_ETF = ["SPY", "QQQ", "DIA", "IWM", "EFA", "EEM"]
 
 TICKERS_SP20_GS = ['AAPL.US', 'GS.US', 'MSFT.US', 'AMZN.US', 'GOOGL.US', 'GOOG.US', 'META.US', 'TSLA.US', 'AVGO.US', 'BRK-B.US', 'WMT.US', 'LLY.US', 'JPM.US', 'V.US', 'MA.US', 'ORCL.US', 'XOM.US', 'UNH.US', 'COST.US', 'PG.US']
 
+TICKERS_PENNY = [
+    'CYPH.US', 'DVLT.US', 'FAT.US', 'GNPX.US', 'HBIO.US',
+    'PHIO.US', 'QCLS.US', 'RANI.US', 'RLMD.US', 'RVYL.US', 
+    'SBLX.US', 'SEGG.US', 'SGBX.US', 'SLNH.US', 'SLRX.US', 
+    'SONN.US', 'TEAD.US', 'THAR.US', 'TRUG.US', 'TYGO.US',
+    'UGRO.US', 'VEEE.US', 'VIVK.US', 'VSTD.US', 'WKHS.US',
+    'WORX.US', 'ZYXI.US', 'DZZ.US', 'MSOX.US', 'SOC.US','SPRU.US','TE.US',
+]
 
 TICKERS_GROUP_SP20 = [
     # Technology (4)
