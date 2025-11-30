@@ -85,6 +85,7 @@ def downloadPricesStooq_debug(tickers, start=None, end=None, min_days=500):
     Debug version of downloadPricesStooq:
     - Same signature and return type.
     - Prints what gets dropped at each cleaning step.
+    - Additionally: keeps ONLY columns whose non-NaN count == 1759.
     """
     series = []
     print("=== Fetching individual series ===")
@@ -94,8 +95,9 @@ def downloadPricesStooq_debug(tickers, start=None, end=None, min_days=500):
             print(f"Ticker {t}: FAILED (no usable data)")
             continue
 
+        non_na = s.notna().sum()
         print(
-            f"Ticker {t}: non-NaN count = {s.notna().sum()}, "
+            f"Ticker {t}: non-NaN count = {non_na}, "
             f"range = [{s.index.min().date()} .. {s.index.max().date()}]"
         )
         series.append(s)
@@ -111,21 +113,21 @@ def downloadPricesStooq_debug(tickers, start=None, end=None, min_days=500):
     print("NaN counts per column (raw):")
     print(raw.isna().sum())
 
-    # Step 2: column filter by min_days (same as dropna(axis=1, thresh=min_days))
-    cols_before = list(raw.columns)
-    prices_cols_filtered = raw.dropna(axis=1, thresh=min_days)
-    cols_after = list(prices_cols_filtered.columns)
-    dropped_cols = sorted(set(cols_before) - set(cols_after))
+    # Step 2: keep ONLY columns with exactly 1759 non-NaN entries
+    non_na_counts = raw.notna().sum()
+    keep_cols = non_na_counts[non_na_counts == 1759].index.tolist()
+    dropped_cols = sorted(set(raw.columns) - set(keep_cols))
 
-    print("\n=== After column filter (thresh=min_days) ===")
+    prices_cols_filtered = raw[keep_cols]
+
+    print("\n=== After filtering for non-NaN count == 1759 ===")
     print(f"Shape: {prices_cols_filtered.shape}")
-    print(f"Date range: [{prices_cols_filtered.index.min().date()} .. {prices_cols_filtered.index.max().date()}]")
     if dropped_cols:
-        print("Dropped tickers (too few non-NaN days):", dropped_cols)
+        print("Dropped tickers (non-NaN count != 1759):", dropped_cols)
     else:
-        print("No tickers dropped at column filter stage.")
-    print("NaN counts per column (after column filter):")
-    print(prices_cols_filtered.isna().sum())
+        print("No tickers dropped at 1759-count filter.")
+    print("Non-NaN counts of kept columns:")
+    print(prices_cols_filtered.notna().sum())
 
     # Step 3: row dropna (this is where early years often get chopped)
     prices_final = prices_cols_filtered.dropna()
@@ -137,7 +139,7 @@ def downloadPricesStooq_debug(tickers, start=None, end=None, min_days=500):
     rows_after = len(prices_final)
     print(f"Rows removed by dropna(): {rows_before - rows_after}")
 
-    print("\nFirst 10 dates (after column filter, before row dropna):")
+    print("\nFirst 10 dates (after 1759-count filter, before row dropna):")
     print(prices_cols_filtered.head(10))
 
     print("\nFirst 10 dates (after row dropna):")
