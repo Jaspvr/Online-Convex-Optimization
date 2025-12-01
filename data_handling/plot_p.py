@@ -133,8 +133,6 @@ plt.ylabel("Total Percent Gain")
 
 
 ax = plt.gca()
-# Because your data is already in percent units (e.g., 100 = 100%),
-# set xmax=100 so 100 -> "100%"
 ax.yaxis.set_major_formatter(mtick.PercentFormatter(xmax=100))
 
 
