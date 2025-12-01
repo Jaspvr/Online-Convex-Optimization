@@ -9,7 +9,7 @@ from uniform_crp import uniformCRP
 from exponentiated_gradient import OnlinePortfolio
 
 class OnlinePortfolioEGPenny:
-    def __init__(self, data):
+    def __init__(self, data, lam):
         self.data = data
         self.T, self.n = data.shape
         self.c = 1
@@ -20,14 +20,14 @@ class OnlinePortfolioEGPenny:
         # Volatility tracking for each stock:
         self.volatility = np.ones(self.n)
 
-        self.volatilityScalar = 0.0
+        self.lam = lam
 
     def updateVolatility(self, rt):
         dailyReturn = rt - 1.0 
 
         self.volatility = np.sqrt(
-            (1.0 - self.volatilityScalar) * (self.volatility ** 2) +
-            self.volatilityScalar * (dailyReturn ** 2) +
+            (1.0 - self.lam) * (self.volatility ** 2) +
+            self.lam * (dailyReturn ** 2) +
             1e-10
         )
 
@@ -91,8 +91,13 @@ def main():
     relativePrices = (prices / prices.shift(1)).dropna().to_numpy()
     dates = prices.index[1:]
 
-    portfolio = OnlinePortfolioEGPenny(relativePrices)
-    X, wealth, loss = portfolio.eg()
+    lams = [0.01, 0.05, 0.1, 0.2]
+    lamWealths = []
+    for l in lams:
+        portfolio = OnlinePortfolioEGPenny(relativePrices, l)
+        _, wealth, _ = portfolio.eg()
+        lamWealths.append(wealth)
+
 
     wealthUniformCRP = uniformCRP(relativePrices)
     _, wealthOptimalCRP = optimalCrpWeightsCvx(relativePrices)
@@ -104,21 +109,18 @@ def main():
 
 
     plt.figure()
-    plt.plot(dates, np.log(wealth), label="EG")
-    # plt.plot(dates, np.log(wealthBestStock),
-    #          label=f"Best single stock")
-    # plt.plot(dates, np.log(wealthUniformCRP),
-    #          label=f"Uniform CRP")
-    # plt.plot(dates, np.log(wealthOptimalCRP),
-    #          label=f"Optimal CRP")
-    plt.plot(dates, np.log(wealthNormalEG),
-             label=f"Normal EG")
-    plt.title("Exponentiated Gradient vs Baseline Strategies")
+    plt.plot(dates, np.log(wealthNormalEG), label="Normal EG")
+    plt.plot(dates, np.log(lamWealths[0]), label="Volatility-Scaled EG, Lambda=0.01")
+    plt.plot(dates, np.log(lamWealths[1]), label="Volatility-Scaled EG, Lambda=0.05")
+    plt.plot(dates, np.log(lamWealths[2]), label="Volatility-Scaled EG, Lambda=0.1")
+    plt.plot(dates, np.log(lamWealths[2]), label="Volatility-Scaled EG, Lambda=0.2")
+    plt.title("Normal EG vs Volatily-Scaled EG")
     plt.xlabel("Date")
     plt.ylabel("Portfolio Log Wealth")
     plt.legend()
     plt.tight_layout()
-    plt.savefig("Plots/eg_vs_baselines_sp20.pdf")  #
+    # plt.savefig("Plots/eg_vs_baselines_sp20.pdf")  #
+    plt.savefig("Plots/eg_vs_vol.pdf")  #
     plt.show()
 
     
