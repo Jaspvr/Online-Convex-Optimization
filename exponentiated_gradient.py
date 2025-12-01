@@ -18,7 +18,7 @@ class OnlinePortfolio:
         self.c = 1 # smallest price relative
         self.C = 1 # largest price relative
 
-        self.learnScalar = 100
+        self.learnScalar = 1
         
         # Initialize weights as 1/n for each (x1 in K)
         # Using an n-dimensional simplex K as the convex set
@@ -26,8 +26,12 @@ class OnlinePortfolio:
 
     def computeEta(self, xt):
         # eta = (c / C) * root(8 * ln(num stocks) / (num trading days)) via PLG
-        self.c = min(xt)
-        self.C = max(xt)
+
+        if min(xt) < self.c:
+            self.c = min(xt)
+
+        if max(xt) > self.C:
+            self.C = max(xt)
         return (self.c / self.C) * np.sqrt(8 * np.log(self.n) / self.T)
 
     def loss(self, xt, t):

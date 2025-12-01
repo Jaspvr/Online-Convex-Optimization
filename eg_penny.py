@@ -13,15 +13,30 @@ class OnlinePortfolio:
         self.T, self.n = data.shape
         self.c = 1
         self.C = 1
-        self.learnScalar = 1
+        self.learnScalar = 100
         self.weights = np.ones(self.n) / self.n
 
-    def computeEta(self, xt):
-        if min(xt) < self.c:
-            self.c = min(xt)
+        # Volatility tracking for each stock:
+        self.volatility = np.ones(self.n)
+
+        self.volatilityScalar = 0.5
+
+    def updateVolatility(self, rt):
+        dailyReturn = rt - 1.0 
+
+        self.volatility = np.sqrt(
+            (1.0 - self.volatilityScalar) * (self.volatility ** 2) +
+            self.volatilityScalar * (dailyReturn ** 2) +
+            1e-10
+        )
+
+    def computeEta(self, rt):
+        if min(rt) < self.c:
+            self.c = min(rt)
         
-        if max(xt) > self.C:
-            self.C = max(xt)
+        if max(rt) > self.C:
+            self.C = max(rt)
+
         return (self.c / self.C) * np.sqrt(8 * np.log(self.n) / self.T)
 
     def loss(self, xt, t):
@@ -48,10 +63,14 @@ class OnlinePortfolio:
             X[t] = xt
             L[t] = self.loss(xt, t)
             gradt = self.gradient(xt, t)
+            rt = self.data[t]
 
-            eta = self.learnScalar * self.computeEta(self.data[t])
+            eta = self.learnScalar * self.computeEta(rt)
 
-            yt = xt * np.exp(-eta * gradt)
+            self.updateVolatility(rt)
+            volScaledGradient = gradt / (self.volatility + 1e-10)
+
+            yt = xt * np.exp(-eta * volScaledGradient)
 
             xt = yt / sum(yt)
 
