@@ -88,13 +88,16 @@ class OnlinePortfolioOGD:
 
 def main():
     # Use ETF data from Stooq
-    TICKERS = TICKERS_GROUP_SP20
-    START = "2015-11-01"
-    END = "2025-11-01"  # Until current date
+    TICKERS = TICKERS_PENNY30
+    START = "2018-11-01"
+    END = "2025-10-31"  # Until current date
 
     # prices = downloadPricesStooq(TICKERS, start=START, end=END, min_days=500)
     # cache_file = "data/sp20Group_2015-11-01_2025-11-01.csv"
-    cache_file = "data/sp20_2015-11-01_2025-11-01.csv" # GS instead of NVIDIA
+
+    # cache_file = "data/sp20_2015-11-01_2025-11-01.csv" # GS instead of NVIDIA
+    cache_file = "data/penny20_2018-11-01_2025-10-31.csv"
+
     # cache_file = "data/sp20new_2015-11-01_2025-11-01.csv" # with nvidia
     prices = loadOrDownloadPrices(TICKERS, start=START, end=END,
                                  min_days=500, cache_path=cache_file)

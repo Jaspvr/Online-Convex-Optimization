@@ -17,8 +17,11 @@ class OnlinePortfolio:
         self.weights = np.ones(self.n) / self.n
 
     def computeEta(self, xt):
-        self.c = min(xt)
-        self.C = max(xt)
+        if min(xt) < self.c:
+            self.c = min(xt)
+        
+        if max(xt) > self.C:
+            self.C = max(xt)
         return (self.c / self.C) * np.sqrt(8 * np.log(self.n) / self.T)
 
     def loss(self, xt, t):
@@ -57,11 +60,11 @@ class OnlinePortfolio:
         return X, wealth, L
 
 def main():
-    TICKERS = TICKERS_SP20
-    START = "2015-11-01"
-    END = "2020-10-31"
+    TICKERS = TICKERS_PENNY30
+    START = "2018-11-01"
+    END = "2025-10-31"
 
-    cache_file = "data/penny20_2015-11-01_2020-10-31.csv"
+    cache_file = "data/penny20_2018-11-01_2025-10-31.csv"
     prices = loadOrDownloadPrices(TICKERS, start=START, end=END,
                                  min_days=500, cache_path=cache_file)
 

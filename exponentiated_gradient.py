@@ -18,7 +18,7 @@ class OnlinePortfolio:
         self.c = 1 # smallest price relative
         self.C = 1 # largest price relative
 
-        self.learnScalar = 1
+        self.learnScalar = 100
         
         # Initialize weights as 1/n for each (x1 in K)
         # Using an n-dimensional simplex K as the convex set
