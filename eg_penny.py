@@ -6,8 +6,9 @@ from best_stock import bestInHindsight
 from data.tickers import *
 from optimal_crp import optimalCrpWeightsCvx
 from uniform_crp import uniformCRP
+from exponentiated_gradient import OnlinePortfolio
 
-class OnlinePortfolio:
+class OnlinePortfolioEGPenny:
     def __init__(self, data):
         self.data = data
         self.T, self.n = data.shape
@@ -19,7 +20,7 @@ class OnlinePortfolio:
         # Volatility tracking for each stock:
         self.volatility = np.ones(self.n)
 
-        self.volatilityScalar = 0.5
+        self.volatilityScalar = 0.0
 
     def updateVolatility(self, rt):
         dailyReturn = rt - 1.0 
@@ -80,22 +81,24 @@ class OnlinePortfolio:
 
 def main():
     TICKERS = TICKERS_PENNY30
-    START = "2018-11-01"
+    START = "2020-11-01"
     END = "2025-10-31"
 
-    cache_file = "data/penny20_2018-11-01_2025-10-31.csv"
+    cache_file = "data/penny20_2020-11-01_2025-10-31.csv"
     prices = loadOrDownloadPrices(TICKERS, start=START, end=END,
                                  min_days=500, cache_path=cache_file)
 
     relativePrices = (prices / prices.shift(1)).dropna().to_numpy()
     dates = prices.index[1:]
 
-    portfolio = OnlinePortfolio(relativePrices)
+    portfolio = OnlinePortfolioEGPenny(relativePrices)
     X, wealth, loss = portfolio.eg()
 
     wealthUniformCRP = uniformCRP(relativePrices)
     _, wealthOptimalCRP = optimalCrpWeightsCvx(relativePrices)
     wealthBestStock = bestInHindsight(relativePrices)
+    p = OnlinePortfolio(relativePrices)
+    _, wealthNormalEG, _ = p.eg()
 
     print("Final wealth (EG): ", wealth[-1])
 
@@ -104,10 +107,12 @@ def main():
     plt.plot(dates, np.log(wealth), label="EG")
     # plt.plot(dates, np.log(wealthBestStock),
     #          label=f"Best single stock")
-    plt.plot(dates, np.log(wealthUniformCRP),
-             label=f"Uniform CRP")
-    plt.plot(dates, np.log(wealthOptimalCRP),
-             label=f"Optimal CRP")
+    # plt.plot(dates, np.log(wealthUniformCRP),
+    #          label=f"Uniform CRP")
+    # plt.plot(dates, np.log(wealthOptimalCRP),
+    #          label=f"Optimal CRP")
+    plt.plot(dates, np.log(wealthNormalEG),
+             label=f"Normal EG")
     plt.title("Exponentiated Gradient vs Baseline Strategies")
     plt.xlabel("Date")
     plt.ylabel("Portfolio Log Wealth")

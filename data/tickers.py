@@ -24,7 +24,7 @@ TICKERS_PENNY30 = [
     'FRGT.US',  'GNPX.US', 'GREE.US', 'HBIO.US', 'HYPD.US', 
     'IBIO.US', 'IRWD.US', 'KALA.US', 'LMFA.US', 'PHIO.US', 
     'QCLS.US', 'RLMD.US',  'RNTX.US', 'SBLX.US', 'SLRX.US', 
-    'SLSN.US', 'SONN.US', 'SSP.US',  'STIM.US',  'TPST.US', 
+     'SONN.US', 'SSP.US',  'STIM.US',  'TPST.US', 'TRAW.US'
     # 'TRAW.US', 'TXMD.US', 'WKHS.US',
 ]
 
