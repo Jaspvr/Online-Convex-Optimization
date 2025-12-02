@@ -70,17 +70,18 @@ class OnlinePortfolioBundlesONS:
             At  = At + np.outer(gradt, gradt)
 
             invAg = np.linalg.solve(At, gradt)
-            yt = xt - (1.0 / self.gamma) * invAg
+            yt = bundleXt- (1.0 / self.gamma) * invAg
 
             bundleXt  = cvxpyOnsProjectToK(yt, At)
 
             xt = eliminateBundles(bundleXt, self.groups, self.numStocks)
 
-        growth = (X * self.data).sum(axis=1)
+        priceRelativesNoBundles = self.data[:, :self.numStocks]
+        growth = (X * priceRelativesNoBundles).sum(axis=1)
         wealth = growth.cumprod()
         return X, wealth, L
    
-    def onsGiveToBest(self):
+    def onsGiveToBest(self, alpha):
         xt = self.weights.copy()
         bundleXt = self.weightsBundles.copy()
 
@@ -104,13 +105,14 @@ class OnlinePortfolioBundlesONS:
             At  = At + np.outer(gradt, gradt)
 
             invAg = np.linalg.solve(At, gradt)
-            yt = xt - (1.0 / self.gamma) * invAg
+            yt = bundleXt - (1.0 / self.gamma) * invAg
 
             bundleXt  = cvxpyOnsProjectToK(yt, At)
 
             xt = eliminateBundles_toBest(bundleXt, self.groups, self.numStocks)
 
-        growth = (X * self.data).sum(axis=1)
+        priceRelativesNoBundles = self.data[:, :self.numStocks]
+        growth = (X * priceRelativesNoBundles).sum(axis=1)
         wealth = growth.cumprod()
         return X, wealth, L
        
@@ -122,14 +124,14 @@ def main():
     # Ticker order: Tech (4), Health Care (3), Financials (4), Consumer Discretionary (3),
     # Industrials (3), Energy (3)
     # TICKERS = TICKERS_GROUP_SP20
-    TICKERS = TICKERS_GROUP_SP40
+    TICKERS = TICKERS_GROUP_SP20
     START = "2015-11-01"
     END = "2025-11-01"
     # groups = bestGroup20
-    groups = groups40
+    groups = bgons20
 
-    # cache_file = "data/sp20Group_2015-11-01_2025-11-01.csv"
-    cache_file = "data/sp40Group_2015-11-01_2025-11-01.csv" 
+    cache_file = "data/sp20Group_2015-11-01_2025-11-01.csv"
+    # cache_file = "data/sp40Group_2015-11-01_2025-11-01.csv" 
     prices = loadOrDownloadPrices(TICKERS, start=START, end=END,
                                  min_days=500, cache_path=cache_file)
     
@@ -143,15 +145,15 @@ def main():
 
     numBundles = len(groups)
     portfolio = OnlinePortfolioBundlesONS(relativePricesBundles, numStocks, numBundles, groups)
-    # XBundles, wealthBundles, _ = portfolio.ogdGiveToBest()
-    XBundles, wealthBundles, _ = portfolio.onsBasicBundling()
+    # XBundles, wealthBundles, _ = portfolio.ogdGiveToBest(1)
+    XBundles, wealthBundles, _ = portfolio.onsBasicBundling(1)
 
     # For comparison
     relativePrices = (prices / prices.shift(1)).dropna().to_numpy()
     wealthUniformCRP = uniformCRP(relativePrices)
     _, wealthOptimalCRP = optimalCrpWeightsCvx(relativePrices)
     portfolio = OnlinePortfolio(relativePrices)
-    XRegular, wealthRegular, _ = portfolio.ons()
+    XRegular, wealthRegular, _ = portfolio.ons(1)
 
     print("Weight distributions regular: ", XRegular)
     print("Weight distributions bundles: ", XBundles)
@@ -164,14 +166,14 @@ def main():
     plt.figure()
     plt.plot(dates, np.log(wealthRegular), label="OGD Regular (log-wealth)")
     plt.plot(dates, np.log(wealthBundles), label="OGD Bundles (log-wealth)")
-    plt.plot(dates, np.log(wealthOptimalCRP), label="Optimal CRP")
-    plt.plot(dates, np.log(wealthUniformCRP), label="Uniform CRP")
+    # plt.plot(dates, np.log(wealthOptimalCRP), label="Optimal CRP")
+    # plt.plot(dates, np.log(wealthUniformCRP), label="Uniform CRP")
     plt.title(labels[tuple(TICKERS)])
     plt.xlabel("Date")
     plt.ylabel("Portfolio Log Wealth")
     plt.legend()
     plt.tight_layout()
-    plt.savefig("Plots/ogd_addexp_sp40Groups_basic_baselines.pdf")  # vector graphic
+    plt.savefig("Plots/ons_addexp_sp20Groups_basic.pdf")  # vector graphic
     plt.show()
 
 if __name__ == "__main__":

@@ -1,17 +1,18 @@
 from additional_experts import *
+from additional_experts_ons import OnlinePortfolioBundlesONS
 from random_groups import randomGroups
 
 def main():
-    TICKERS = TICKERS_GROUP_SP40
+    TICKERS = TICKERS_GROUP_SP20
     START = "2005-11-01"
     END = "2015-11-01"
 
 
-    cache_file = "data/sp40Group_2005-11-01_2015-11-01.csv"
+    # cache_file = "data/sp40Group_2005-11-01_2015-11-01.csv"
     # cache_file = "data/sp40Group_2015-11-01_2025-11-01.csv"
 
     # cache_file = "data/sp20Group_2015-11-01_2025-11-01.csv"
-    # cache_file = "data/sp20Group_2005-11-01_2015-11-01.csv" 
+    cache_file = "data/sp20Group_2005-11-01_2015-11-01.csv" 
 
     # cache_file = "data/sp20new_2005-11-01_2015-11-01.csv" # with nvidia
     prices = loadOrDownloadPrices(TICKERS, start=START, end=END,
@@ -26,13 +27,16 @@ def main():
 
     for i in range(20):
         print("\niteration: ", i)
-        groups = randomGroups(40)
+        groups = randomGroups(20)
 
         relativePricesBundles = bundles(relativePrices, groups)
 
         numBundles = len(groups)
-        portfolio = OnlinePortfolioBundlesOGD(relativePricesBundles, numStocks, numBundles, groups)
-        _, wealthBundles, _ = portfolio.ogdBasicBundling()
+        # portfolio = OnlinePortfolioBundlesOGD(relativePricesBundles, numStocks, numBundles, groups)
+        # _, wealthBundles, _ = portfolio.ogdBasicBundling()
+
+        portfolio = OnlinePortfolioBundlesONS(relativePricesBundles, numStocks, numBundles, groups)
+        _, wealthBundles, _ = portfolio.onsBasicBundling(1)
 
         if not maxWealth or wealthBundles[-1] > maxWealth:
             bestGroup = groups
