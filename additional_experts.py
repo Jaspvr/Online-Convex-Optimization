@@ -53,7 +53,7 @@ class OnlinePortfolioBundlesOGD:
         xpMul = max(float(xt @ rt), 1e-10)
         return -rt / xpMul
 
-    def odg(self):
+    def ogdBasicBundling(self):
         xt = self.weights.copy() # Initial weight spread is uniform distribution
         bundleXt = self.weightsBundles.copy()
 
@@ -73,7 +73,35 @@ class OnlinePortfolioBundlesOGD:
             yNext = bundlesX[t] - self.etaScalar * self.eta[t] * Grad[t]
             bundleXt = cvxpyOgdProjectToK(yNext)
 
-            # xt = eliminateBundles(bundleXt, self.groups, self.numStocks)
+            xt = eliminateBundles(bundleXt, self.groups, self.numStocks)
+            # xt = eliminateBundles_toBest(bundleXt, self.groups, self.priceRelatives[t], self.numStocks)
+
+       
+        priceRelativesNoBundles = self.priceRelatives[:, :self.numStocks]
+        growth = (X * priceRelativesNoBundles).sum(axis=1)
+        wealth = growth.cumprod()
+        return X, wealth, L
+    
+    def ogdGiveToBest(self):
+        xt = self.weights.copy() # Initial weight spread is uniform distribution
+        bundleXt = self.weightsBundles.copy()
+
+        X = np.zeros((self.T, self.numStocks)) # Decisions (weight spreads)
+        bundlesX = np.zeros((self.T, self.numStocks + self.numBundles))
+        Grad = np.zeros((self.T, self.numStocks + self.numBundles)) # Gradients
+        L = np.zeros(self.T) # Loss vector (1 entry per round)
+
+        for t in range(self.T): 
+            X[t] = xt
+            bundlesX[t] = bundleXt
+            L[t] = self.loss(bundleXt, t)
+
+            Grad[t] = self.gradient(bundleXt, t)
+            self.computeEta(Grad[t], t)
+
+            yNext = bundlesX[t] - self.etaScalar * self.eta[t] * Grad[t]
+            bundleXt = cvxpyOgdProjectToK(yNext)
+
             xt = eliminateBundles_toBest(bundleXt, self.groups, self.priceRelatives[t], self.numStocks)
 
        
@@ -86,15 +114,15 @@ class OnlinePortfolioBundlesOGD:
 def main():
     # Ticker order: Tech (4), Health Care (3), Financials (4), Consumer Discretionary (3),
     # Industrials (3), Energy (3)
-    TICKERS = TICKERS_GROUP_SP20
+    # TICKERS = TICKERS_GROUP_SP20
+    TICKERS = TICKERS_GROUP_SP40
     START = "2015-11-01"
     END = "2025-11-01"
-    groups = bestGroup20
+    # groups = bestGroup20
+    groups = groups40
 
-    # prices = downloadPricesStooq(TICKERS, start=START, end=END, min_days=500)
-     # cache_file = "data/sp20Group_2015-11-01_2025-11-01.csv"
-    # cache_file = "data/sp20_2015-11-01_2025-11-01.csv" # GS instead of NVIDIA
-    cache_file = "data/sp20new_2015-11-01_2025-11-01.csv" # with nvidia
+    # cache_file = "data/sp20Group_2015-11-01_2025-11-01.csv"
+    cache_file = "data/sp40Group_2015-11-01_2025-11-01.csv" 
     prices = loadOrDownloadPrices(TICKERS, start=START, end=END,
                                  min_days=500, cache_path=cache_file)
     
@@ -108,7 +136,8 @@ def main():
 
     numBundles = len(groups)
     portfolio = OnlinePortfolioBundlesOGD(relativePricesBundles, numStocks, numBundles, groups)
-    XBundles, wealthBundles, _ = portfolio.odg()
+    # XBundles, wealthBundles, _ = portfolio.ogdGiveToBest()
+    XBundles, wealthBundles, _ = portfolio.ogdBasicBundling()
 
     # For comparison
     relativePrices = (prices / prices.shift(1)).dropna().to_numpy()
@@ -127,73 +156,18 @@ def main():
     print("Final log wealth (OGD bundles): ", np.log(wealthBundles[-1]))
 
     # Plot the log wealth growth over time. Use log wealth since it matches with the loss
-    # plt.figure()
-    # plt.plot(dates, np.log(wealthRegular), label="OGD Regular (log-wealth)")
-    # plt.plot(dates, np.log(wealthBundles), label="OGD Bundles (log-wealth)")
-    # plt.plot(dates, np.log(wealthBestStock),
-    #          label=f"Best single stock")
-    # plt.plot(dates, np.log(wealthWorstStock),
-    #          label=f"Worst single stock")
-    # plt.plot(dates, np.log(wealthUniformCRP),
-    #          label=f"Uniform CRP")
-    # plt.plot(dates, np.log(wealthOptimalCRP),
-    #          label=f"Optimal CRP")
-    # plt.title("Online Gradient Descent - Portfolio Log Wealth")
-    # plt.xlabel("date")
-    # plt.ylabel("log wealth")
-    # plt.legend()
-    # plt.tight_layout()
-    # plt.show()
-
-    # Plot the log wealth growth over time. Use log wealth since it matches with the loss
     plt.figure()
     plt.plot(dates, np.log(wealthRegular), label="OGD Regular (log-wealth)")
     plt.plot(dates, np.log(wealthBundles), label="OGD Bundles (log-wealth)")
+    plt.plot(dates, np.log(wealthOptimalCRP), label="Optimal CRP")
+    plt.plot(dates, np.log(wealthUniformCRP), label="Uniform CRP")
     plt.title(labels[tuple(TICKERS)])
-    plt.xlabel("date")
-    plt.ylabel("log wealth")
+    plt.xlabel("Date")
+    plt.ylabel("Portfolio Log Wealth")
     plt.legend()
     plt.tight_layout()
+    plt.savefig("Plots/ogd_addexp_sp40Groups_basic_baselines.pdf")  # vector graphic
     plt.show()
 
-    plt.figure()
-    plt.plot(dates, (wealthRegular), label="OGD Regular (log-wealth)")
-    plt.plot(dates, (wealthBundles), label="OGD Bundles (log-wealth)")
-    plt.title(labels[tuple(TICKERS)])
-    plt.xlabel("date")
-    plt.ylabel("log wealth")
-    plt.legend()
-    plt.tight_layout()
-    plt.show()
-
-    # # Plot the log wealth growth over time. Use log wealth since it matches with the loss
-    # plt.figure()
-    # plt.plot(dates, np.log(wealthBundles), label="OGD Bundles (log-wealth)")
-    # plt.plot(dates, np.log(wealthBestStock),
-    #          label=f"Best single stock")
-    # plt.plot(dates, np.log(wealthWorstStock),
-    #          label=f"Worst single stock")
-    # plt.title(labels[tuple(TICKERS)])
-    # plt.xlabel("date")
-    # plt.ylabel("log wealth")
-    # plt.legend()
-    # plt.tight_layout()
-    # plt.show()
-
-    # # Plot the log wealth growth over time. Use log wealth since it matches with the loss
-    # plt.figure()
-    # plt.plot(dates, np.log(wealthBundles), label="OGD Bundles (log-wealth)")
-    # plt.plot(dates, np.log(wealthUniformCRP),
-    #          label=f"Uniform CRP")
-    # plt.plot(dates, np.log(wealthOptimalCRP),
-    #          label=f"Optimal CRP")
-    # plt.title(labels[tuple(TICKERS)])
-    # plt.xlabel("date")
-    # plt.ylabel("log wealth")
-    # plt.legend()
-    # plt.tight_layout()
-    # plt.show()
-
-    
 if __name__ == "__main__":
     main()

@@ -1,0 +1,2 @@
+Loading cached prices from data/penny20_2020-11-01_2025-10-31.csv
+Final wealth follow leader:  7.173339758581413e-14

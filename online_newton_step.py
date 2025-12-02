@@ -103,7 +103,7 @@ class OnlinePortfolio:
 def main():
     # Use ETF data from Stooq
     TICKERS = TICKERS_PENNY30
-    START = "2018-11-01"
+    START = "2020-11-01"
     END = "2025-10-31"  # Until current date
 
     # prices = downloadPricesStooq(TICKERS, start=START, end=END, min_days=500)
