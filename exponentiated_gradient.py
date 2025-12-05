@@ -18,7 +18,7 @@ class OnlinePortfolio:
         self.c = 1 # smallest price relative
         self.C = 1 # largest price relative
 
-        self.learnScalar = 1
+        self.learnScalar = 100
         
         # Initialize weights as 1/n for each (x1 in K)
         # Using an n-dimensional simplex K as the convex set
@@ -83,16 +83,16 @@ class OnlinePortfolio:
 def main():
     # Use ETF data from Stooq
     TICKERS = TICKERS_SP20
-    START = "2020-01-01"
+    START = "2021-01-01"
     END = "2025-11-01"  # Until current date
 
     # prices = downloadPricesStooq(TICKERS, start=START, end=END, min_days=500)
     # cache_file = "data/sp20Group_2015-11-01_2025-11-01.csv"
     # cache_file = "data/sp20_2015-11-01_2025-11-01.csv" # GS instead of NVIDIA
+
     cache_file = "data/sp20new_2015-11-01_2025-11-01.csv" # with nvidia
     prices = loadOrDownloadPrices(TICKERS, start=START, end=END,
                                  min_days=500, cache_path=cache_file)
-    # print(prices)
 
     # Form the table into T x n time series data
     # Get the ratios of the prices compared to the previous day: xt = Pt / Pt-1
@@ -126,7 +126,7 @@ def main():
     plt.ylabel("Portfolio Log Wealth")
     plt.legend()
     plt.tight_layout()
-    plt.savefig("Plots/eg_vs_baselines_sp20.pdf")  #
+    plt.savefig("Plots/eg_vs_baselines_sp20_scaledEta.pdf")  #
     plt.show()
 
     

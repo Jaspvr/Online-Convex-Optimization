@@ -136,8 +136,8 @@ def main():
 
     numBundles = len(groups)
     portfolio = OnlinePortfolioBundlesOGD(relativePricesBundles, numStocks, numBundles, groups)
-    # XBundles, wealthBundles, _ = portfolio.ogdGiveToBest()
-    XBundles, wealthBundles, _ = portfolio.ogdBasicBundling()
+    XBundles, wealthBundles, _ = portfolio.ogdGiveToBest()
+    # XBundles, wealthBundles, _ = portfolio.ogdBasicBundling()
 
     # For comparison
     relativePrices = (prices / prices.shift(1)).dropna().to_numpy()
@@ -166,7 +166,7 @@ def main():
     plt.ylabel("Portfolio Log Wealth")
     plt.legend()
     plt.tight_layout()
-    plt.savefig("Plots/ogd_addexp_sp40Groups_basic_baselines.pdf")  # vector graphic
+    plt.savefig("Plots/ogd_addexp_sp40Groups_salloc.pdf")  # vector graphic
     plt.show()
 
 if __name__ == "__main__":
