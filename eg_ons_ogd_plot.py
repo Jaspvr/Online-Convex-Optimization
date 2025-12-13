@@ -26,20 +26,41 @@ wealthUniformCRP = uniformCRP(relativePrices)
 _, wealthOptimalCRP = optimalCrpWeightsCvx(relativePrices)
 wealthBestStock = bestInHindsight(relativePrices)
 
+wealthUniformCRP = uniformCRP(relativePrices)
+_, wealthOptimalCRP = optimalCrpWeightsCvx(relativePrices)
+wealthBestStock = bestInHindsight(relativePrices)
 
-# Plot the log wealth growth over time. Use log wealth since it matches with the loss
+# Regret vs Optimal CRP (cumulative)
+regretOGD = np.log(wealthOptimalCRP) - np.log(wealthOGD)
+regretONS = np.log(wealthOptimalCRP) - np.log(wealthONS)
+regretEG  = np.log(wealthOptimalCRP) - np.log(wealthEG)
+
 plt.figure()
-plt.plot(dates, np.log(wealthOGD), label="OGD")
-plt.plot(dates, np.log(wealthONS), label="ONS")
-plt.plot(dates, np.log(wealthEG), label="EG")
-# plt.plot(dates, np.log(wealthUniformCRP),
-#             label=f"Uniform CRP")
-# plt.plot(dates, np.log(wealthOptimalCRP),
-#             label=f"Optimal CRP")
-plt.title("OGD vs ONS vs EG")
+plt.plot(dates, regretOGD, label="OGD regret vs Optimal CRP")
+plt.plot(dates, regretONS, label="ONS regret vs Optimal CRP")
+plt.plot(dates, regretEG,  label="EG regret vs Optimal CRP")
+plt.title("Regret vs Optimal CRP")
 plt.xlabel("Date")
-plt.ylabel("Portfolio Log Wealth")
+plt.ylabel("Cumulative Regret")
 plt.legend()
 plt.tight_layout()
-plt.savefig("Plots/ogd_ons_eg.pdf")  #
+plt.savefig("Plots/ogd_ons_eg_regret_vs_optcrp.pdf")
 plt.show()
+
+
+# # Plot the log wealth growth over time. Use log wealth since it matches with the loss
+# plt.figure()
+# plt.plot(dates, np.log(wealthOGD), label="OGD")
+# plt.plot(dates, np.log(wealthONS), label="ONS")
+# plt.plot(dates, np.log(wealthEG), label="EG")
+# # plt.plot(dates, np.log(wealthUniformCRP),
+# #             label=f"Uniform CRP")
+# # plt.plot(dates, np.log(wealthOptimalCRP),
+# #             label=f"Optimal CRP")
+# plt.title("OGD vs ONS vs EG")
+# plt.xlabel("Date")
+# plt.ylabel("Portfolio Log Wealth")
+# plt.legend()
+# plt.tight_layout()
+# plt.savefig("Plots/ogd_ons_eg.pdf")  #
+# plt.show()
